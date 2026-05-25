@@ -18,7 +18,7 @@ interface VolatilitySurface3DProps {
 
 // 3D Mesh Component
 function SurfaceMesh({ volData, futurePrice }: VolatilitySurface3DProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<THREE.Group>(null);
 
   // Group data by DTE and Strike
   const { geometry, center } = useMemo(() => {
@@ -109,17 +109,28 @@ function SurfaceMesh({ volData, futurePrice }: VolatilitySurface3DProps) {
   });
 
   return (
-    <mesh ref={meshRef} geometry={geometry}>
-      <meshStandardMaterial
-        vertexColors
-        roughness={0.1}
-        metalness={0.8}
-        wireframe={true}
-        transparent
-        opacity={0.7}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
+    <group ref={meshRef}>
+      {/* Solid glass surface */}
+      <mesh geometry={geometry}>
+        <meshBasicMaterial
+          vertexColors
+          transparent
+          opacity={0.25}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* Glowing wireframe grid */}
+      <mesh geometry={geometry}>
+        <meshBasicMaterial
+          vertexColors
+          wireframe={true}
+          transparent
+          opacity={0.8}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
   );
 }
 
@@ -136,7 +147,10 @@ export default function VolatilitySurface3D({ volData, futurePrice }: Volatility
 
     // Fallback/Synthetic Surface Generator (Strike vs DTE vs IV)
     const points: VolPoint[] = [];
-    const strikes = [80, 85, 90, 95, 100, 105, 110, 115, 120];
+    const strikes = Array.from({ length: 9 }, (_, i) => {
+      const pct = 0.96 + i * 0.01; // from 96% to 104% of ATM
+      return Math.round(futurePrice * pct);
+    });
     const dtes = [1 / 365, 5 / 365, 10 / 365, 30 / 365, 60 / 365];
 
     dtes.forEach((dte) => {
