@@ -191,6 +191,8 @@ export default function OptionChart({
           ]
         : [
             {
+              // Call Volume / OI Left Axis
+              seriesName: mode === "volume" ? "Call Volume" : "Call Open Interest",
               title: {
                 text: mode === "volume" ? "Volume (Contracts)" : "Open Interest (Contracts)",
                 style: { color: "#94a3b8", fontSize: "11px", fontWeight: 600 }
@@ -201,6 +203,13 @@ export default function OptionChart({
               }
             },
             {
+              // Put Volume / OI shares the exact left axis scale
+              seriesName: mode === "volume" ? "Call Volume" : "Call Open Interest",
+              show: false
+            },
+            {
+              // Implied Volatility (IV %) Right Axis
+              seriesName: "Implied Volatility (IV %)",
               opposite: true,
               title: {
                 text: "Implied Volatility (IV %)",
@@ -209,7 +218,10 @@ export default function OptionChart({
               labels: {
                 style: { colors: "#eab308", fontSize: "10px" },
                 formatter: (val: number) => (val !== null ? val + "%" : "")
-              }
+              },
+              // Focus scaling on the actual volatility smile values rather than forcing zero
+              min: (min) => Math.max(0, Math.floor(min * 0.95)),
+              max: (max) => Math.ceil(max * 1.05)
             }
           ],
       grid: {
