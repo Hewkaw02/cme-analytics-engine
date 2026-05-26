@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Activity, Shield, TrendingUp, Info, RefreshCw, Cpu, Layers, AlertTriangle } from "lucide-react";
+import { Activity, Shield, TrendingUp, Info, RefreshCw, Cpu, Layers, AlertTriangle, BookOpen } from "lucide-react";
 import OptionChart from "../components/OptionChart";
 import VolatilitySurface3D from "../components/VolatilitySurface3D";
 import RiskSidebar from "../components/RiskSidebar";
+import FormulaBook from "../components/FormulaBook";
+import BacktestConsole from "../components/BacktestConsole";
 
 interface StrikeData {
   strike: number;
@@ -45,8 +47,7 @@ interface QuantData {
 
 export default function Home() {
   const [activeSymbol, setActiveSymbol] = useState("ES");
-  const [activeMode, setActiveMode] = useState<"volume" | "oi" | "probability">("volume");
-  const [show3DSurface, setShow3DSurface] = useState(false);
+  const [activeTab, setActiveTab] = useState<"volume" | "oi" | "probability" | "surface" | "backtest">("volume");
   const [data, setData] = useState<QuantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,51 +156,57 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Profile / 3D Toggles */}
-        <div className="flex items-center gap-3">
-          <div className="flex bg-slate-950/80 p-1.5 rounded-2xl border border-slate-900">
-            <button
-              onClick={() => { setActiveMode("volume"); setShow3DSurface(false); }}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                activeMode === "volume" && !show3DSurface
-                  ? "bg-emerald-500 text-slate-950 font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Volume Profile
-            </button>
-            <button
-              onClick={() => { setActiveMode("oi"); setShow3DSurface(false); }}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                activeMode === "oi" && !show3DSurface
-                  ? "bg-emerald-500 text-slate-950 font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Open Interest
-            </button>
-            <button
-              onClick={() => { setActiveMode("probability"); setShow3DSurface(false); }}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                activeMode === "probability" && !show3DSurface
-                  ? "bg-emerald-500 text-slate-950 font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Probability PDF
-            </button>
-          </div>
-
+        {/* Quant Terminal Tab Switcher */}
+        <div className="flex bg-slate-950/80 p-1.5 rounded-2xl border border-slate-900">
           <button
-            onClick={() => setShow3DSurface(!show3DSurface)}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold border transition-all ${
-              show3DSurface
-                ? "bg-yellow-500 text-slate-950 border-yellow-400 glow-text-gold"
-                : "bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700"
+            onClick={() => setActiveTab("volume")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "volume"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <Layers className="w-4 h-4" />
-            3D Vol Surface
+            Option Volume
+          </button>
+          <button
+            onClick={() => setActiveTab("oi")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "oi"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Open Interest
+          </button>
+          <button
+            onClick={() => setActiveTab("probability")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "probability"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Risk PDF
+          </button>
+          <button
+            onClick={() => setActiveTab("surface")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "surface"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            3D Surface
+          </button>
+          <button
+            onClick={() => setActiveTab("backtest")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "backtest"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Backtester Simulation
           </button>
         </div>
       </div>
@@ -250,16 +257,18 @@ export default function Home() {
               </div>
 
               {/* Central Graph Canvas */}
-              <div className="flex-1 glass-panel rounded-2xl p-6 min-h-[480px] flex items-center justify-center">
-                {show3DSurface ? (
+              <div className="flex-1 glass-panel rounded-2xl p-6 min-h-[480px] flex flex-col justify-center">
+                {activeTab === "surface" ? (
                   <VolatilitySurface3D volData={vol3DPoints} futurePrice={data.futurePrice} />
+                ) : activeTab === "backtest" ? (
+                  <BacktestConsole />
                 ) : (
                   <OptionChart
                     strikeData={data.strikeData}
                     futurePrice={data.futurePrice}
                     sdWidth={data.sdWidth}
                     standardDeviations={data.standardDeviations}
-                    mode={activeMode}
+                    mode={activeTab === "volume" ? "volume" : activeTab === "oi" ? "oi" : "probability"}
                     pdfData={data.pdfData}
                   />
                 )}
@@ -289,6 +298,11 @@ export default function Home() {
 
       </div>
 
+      {/* Collapsible Quantitative Formulas Cheat Sheet */}
+      <div className="px-8 pb-4">
+        <FormulaBook />
+      </div>
+ 
       {/* 4. Mini Footer */}
       <footer className="px-8 py-4 border-t border-slate-900 bg-slate-950/40 text-center text-[10px] text-slate-600 font-medium">
         CME Quant Analytics Platform • Designed with Glassmorphic Antigravity Principles • Developed dynamically via Google DeepMind Antigravity AI

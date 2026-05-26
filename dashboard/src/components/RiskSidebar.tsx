@@ -34,27 +34,59 @@ export default function RiskSidebar({
   return (
     <div className="flex flex-col gap-6 w-full h-full text-slate-200">
       
-      {/* 1. Market Maker Regime Card */}
-      <div className="glass-panel rounded-2xl p-5 glow-emerald flex flex-col gap-3">
-        <div className="flex justify-between items-center">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">MM Hedging Regime</span>
-          <Shield className={`w-5 h-5 ${netGex >= 0 ? "text-emerald-400" : "text-rose-400"}`} />
+      {/* 1. Market Maker Hedging Regime Card */}
+      <div className={`glass-panel rounded-2xl p-5 flex flex-col gap-3 transition-all ${
+        netGex >= 0 
+          ? "glow-emerald border-emerald-500/20" 
+          : "glow-rose border-rose-500/20"
+      }`}>
+        <div className="flex justify-between items-center border-b border-slate-800/40 pb-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">MM Hedging Regime</span>
+          <Shield className={`w-4 h-4 ${netGex >= 0 ? "text-emerald-400" : "text-rose-400"}`} />
         </div>
-        <div className="flex flex-col">
-          <span className="text-2xl font-bold tracking-tight">
-            {netGex >= 0 ? "Long Gamma" : "Short Gamma"}
+        
+        <div className="flex flex-col gap-1.5">
+          <span className={`text-xl font-black tracking-tight ${
+            netGex >= 0 ? "text-emerald-400" : "text-rose-400"
+          }`}>
+            {netGex >= 0 ? "Long Gamma Regime" : "Short Gamma Regime"}
           </span>
-          <span className="text-xs text-slate-500 mt-1">
-            {netGex >= 0 
-              ? "Market makers support stability. Mean-reverting volatility behavior expected."
-              : "Market makers expand trends. Fast explosive price runs possible."
-            }
-          </span>
+          
+          <div className="text-[10px] text-slate-300 leading-relaxed font-medium mt-1">
+            {netGex >= 0 ? (
+              <div className="flex flex-col gap-2">
+                <p>
+                  Market makers are net **LONG** options. To maintain a delta-neutral book:
+                </p>
+                <div className="bg-emerald-500/5 border border-emerald-500/10 p-2 rounded-lg font-semibold text-emerald-400/90 text-[9.5px]">
+                  * Buy Dips (when prices fall)
+                  <br />* Sell Rallies (when prices rise)
+                </div>
+                <p className="text-[9px] text-slate-500 font-medium">
+                  Result: Mean-reverting buffer that dampens underlying price volatility and keeps spot inside range.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p>
+                  Market makers are net **SHORT** options. To maintain a delta-neutral book:
+                </p>
+                <div className="bg-rose-500/5 border border-rose-500/10 p-2 rounded-lg font-semibold text-rose-400/90 text-[9.5px]">
+                  * Sell Breakdowns (when prices fall)
+                  <br />* Buy Breakouts (when prices rise)
+                </div>
+                <p className="text-[9px] text-slate-500 font-medium">
+                  Result: Momentum feedback loop that accelerates underlying price trends, opening door to explosive runs.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="w-full bg-slate-950/60 rounded-full h-1.5 mt-2">
+
+        <div className="w-full bg-slate-950/60 rounded-full h-1.5 mt-1.5">
           <div 
             className={`h-1.5 rounded-full ${netGex >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}
-            style={{ width: `${Math.min(Math.max(Math.abs(netGex) / 100000 * 100, 10), 100)}%` }}
+            style={{ width: `${Math.min(Math.max(Math.abs(netGex) / 100000 * 100, 15), 100)}%` }}
           />
         </div>
       </div>
