@@ -220,8 +220,8 @@ export default function OptionChart({
                 formatter: (val: number) => (val !== null ? val + "%" : "")
               },
               // Focus scaling on the actual volatility smile values rather than forcing zero
-              min: (min) => Math.max(0, Math.floor(min * 0.95)),
-              max: (max) => Math.ceil(max * 1.05)
+              min: (min: number) => Math.max(0, Math.floor(min * 0.95)),
+              max: (max: number) => Math.ceil(max * 1.05)
             }
           ],
       grid: {
