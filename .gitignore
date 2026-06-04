@@ -1,0 +1,13 @@
+node_modules/
+.env
+output/
+logs/
+dist/
+*.log
+.DS_Store
+__pycache__/
+.pytest_cache/
+*.pyc
+output_test/
+output_test_integration/
+.idea/
