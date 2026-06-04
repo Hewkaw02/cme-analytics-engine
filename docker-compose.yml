@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: cme-timescaledb
+    environment:
+      POSTGRES_USER: ${DB_USER:-cme_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-cme_data}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cme_user} -d ${DB_NAME:-cme_data}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  fetcher:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cme-fetcher
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-cme_user}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-cme_data}
+      HEADLESS: "true"
+      NODE_ENV: production
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./errors:/app/errors
+    restart: unless-stopped
+    shm_size: '2gb'  # Chrome/Chromium requires shared memory
+
+volumes:
+  pgdata:

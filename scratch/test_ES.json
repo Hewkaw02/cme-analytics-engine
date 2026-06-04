@@ -1,0 +1,4302 @@
+{
+  "ValueName": "Intraday Volume",
+  "Call": {
+    "id": null,
+    "name": "Call",
+    "data": [
+      {
+        "x": 7230,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508162
+        }
+      },
+      {
+        "x": 7235,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589253
+        }
+      },
+      {
+        "x": 7240,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508163
+        }
+      },
+      {
+        "x": 7245,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589254
+        }
+      },
+      {
+        "x": 7250,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453226
+        }
+      },
+      {
+        "x": 7255,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589255
+        }
+      },
+      {
+        "x": 7260,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508164
+        }
+      },
+      {
+        "x": 7265,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589256
+        }
+      },
+      {
+        "x": 7270,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508165
+        }
+      },
+      {
+        "x": 7275,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7482078
+        }
+      },
+      {
+        "x": 7280,
+        "y": 32,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508166
+        }
+      },
+      {
+        "x": 7285,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589257
+        }
+      },
+      {
+        "x": 7290,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508167
+        }
+      },
+      {
+        "x": 7295,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589258
+        }
+      },
+      {
+        "x": 7300,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453227
+        }
+      },
+      {
+        "x": 7305,
+        "y": 4,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589259
+        }
+      },
+      {
+        "x": 7310,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508168
+        }
+      },
+      {
+        "x": 7315,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589260
+        }
+      },
+      {
+        "x": 7320,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508169
+        }
+      },
+      {
+        "x": 7325,
+        "y": 25,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7482079
+        }
+      },
+      {
+        "x": 7330,
+        "y": 70,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508170
+        }
+      },
+      {
+        "x": 7335,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589261
+        }
+      },
+      {
+        "x": 7340,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508171
+        }
+      },
+      {
+        "x": 7345,
+        "y": 38,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589262
+        }
+      },
+      {
+        "x": 7350,
+        "y": 158,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7457930
+        }
+      },
+      {
+        "x": 7355,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589263
+        }
+      },
+      {
+        "x": 7360,
+        "y": 121,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508172
+        }
+      },
+      {
+        "x": 7365,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589264
+        }
+      },
+      {
+        "x": 7370,
+        "y": 105,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508173
+        }
+      },
+      {
+        "x": 7375,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7487526
+        }
+      },
+      {
+        "x": 7380,
+        "y": 247,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508174
+        }
+      },
+      {
+        "x": 7385,
+        "y": 232,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589265
+        }
+      },
+      {
+        "x": 7390,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508175
+        }
+      },
+      {
+        "x": 7395,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589266
+        }
+      },
+      {
+        "x": 7400,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453228
+        }
+      },
+      {
+        "x": 7405,
+        "y": 306,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589267
+        }
+      },
+      {
+        "x": 7410,
+        "y": 450,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508176
+        }
+      },
+      {
+        "x": 7415,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589268
+        }
+      },
+      {
+        "x": 7420,
+        "y": 1289,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508177
+        }
+      },
+      {
+        "x": 7425,
+        "y": 897,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7492659
+        }
+      },
+      {
+        "x": 7430,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508178
+        }
+      },
+      {
+        "x": 7435,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589269
+        }
+      },
+      {
+        "x": 7440,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508179
+        }
+      },
+      {
+        "x": 7445,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589270
+        }
+      },
+      {
+        "x": 7450,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7457931
+        }
+      },
+      {
+        "x": 7455,
+        "y": 703,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589271
+        }
+      },
+      {
+        "x": 7460,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511702
+        }
+      },
+      {
+        "x": 7465,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589272
+        }
+      },
+      {
+        "x": 7470,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511703
+        }
+      },
+      {
+        "x": 7475,
+        "y": 1261,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7497892
+        }
+      },
+      {
+        "x": 7480,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511704
+        }
+      },
+      {
+        "x": 7485,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589273
+        }
+      },
+      {
+        "x": 7490,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511705
+        }
+      },
+      {
+        "x": 7495,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589274
+        }
+      },
+      {
+        "x": 7500,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453229
+        }
+      },
+      {
+        "x": 7505,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589275
+        }
+      },
+      {
+        "x": 7510,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511706
+        }
+      },
+      {
+        "x": 7515,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589276
+        }
+      },
+      {
+        "x": 7520,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511707
+        }
+      },
+      {
+        "x": 7525,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511708
+        }
+      },
+      {
+        "x": 7530,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7522261
+        }
+      },
+      {
+        "x": 7535,
+        "y": 827,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589277
+        }
+      },
+      {
+        "x": 7540,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7522262
+        }
+      },
+      {
+        "x": 7545,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589278
+        }
+      },
+      {
+        "x": 7550,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7477409
+        }
+      },
+      {
+        "x": 7555,
+        "y": 232,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589279
+        }
+      },
+      {
+        "x": 7560,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7530640
+        }
+      },
+      {
+        "x": 7565,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589280
+        }
+      },
+      {
+        "x": 7570,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7530641
+        }
+      },
+      {
+        "x": 7575,
+        "y": 901,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7547917
+        }
+      },
+      {
+        "x": 7580,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7547918
+        }
+      },
+      {
+        "x": 7585,
+        "y": 219,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589281
+        }
+      },
+      {
+        "x": 7590,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7547919
+        }
+      },
+      {
+        "x": 7595,
+        "y": 34,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589282
+        }
+      },
+      {
+        "x": 7600,
+        "y": 606,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453230
+        }
+      },
+      {
+        "x": 7605,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589283
+        }
+      },
+      {
+        "x": 7610,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7554680
+        }
+      },
+      {
+        "x": 7615,
+        "y": 24,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589284
+        }
+      },
+      {
+        "x": 7620,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7554681
+        }
+      },
+      {
+        "x": 7625,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7566032
+        }
+      },
+      {
+        "x": 7630,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7566033
+        }
+      },
+      {
+        "x": 7635,
+        "y": 4,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589285
+        }
+      },
+      {
+        "x": 7640,
+        "y": 7,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7566034
+        }
+      },
+      {
+        "x": 7645,
+        "y": 2,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589286
+        }
+      }
+    ],
+    "type": "column",
+    "showCheckbox": false,
+    "selected": false,
+    "showInLegend": true,
+    "showInStats": true,
+    "includeInDataExport": true,
+    "color": "#418CF0",
+    "opacity": 1,
+    "borderColor": "Transparent",
+    "dashStyle": null,
+    "yAxis": 0,
+    "xAxis": 0,
+    "enableMouseTracking": true,
+    "lineWidth": 1,
+    "connectNulls": false,
+    "visible": true,
+    "custom": {
+      "Key": null,
+      "LegendText": null,
+      "LabelText": null
+    },
+    "tooltip": {},
+    "centerInCategory": false,
+    "linkedTo": null,
+    "TooltipUseChartCoordinatesY": false,
+    "Tag": null,
+    "TT": {
+      "Label": null,
+      "Method": "standardTip",
+      "Decimals": 0,
+      "Suffix": null,
+      "AjaxMethod": null,
+      "Tag": null
+    }
+  },
+  "Put": {
+    "id": null,
+    "name": "Put",
+    "data": [
+      {
+        "x": 7230,
+        "y": 447,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508162
+        }
+      },
+      {
+        "x": 7235,
+        "y": 684,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589253
+        }
+      },
+      {
+        "x": 7240,
+        "y": 499,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508163
+        }
+      },
+      {
+        "x": 7245,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589254
+        }
+      },
+      {
+        "x": 7250,
+        "y": 1578,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453226
+        }
+      },
+      {
+        "x": 7255,
+        "y": 298,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589255
+        }
+      },
+      {
+        "x": 7260,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508164
+        }
+      },
+      {
+        "x": 7265,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589256
+        }
+      },
+      {
+        "x": 7270,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508165
+        }
+      },
+      {
+        "x": 7275,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7482078
+        }
+      },
+      {
+        "x": 7280,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508166
+        }
+      },
+      {
+        "x": 7285,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589257
+        }
+      },
+      {
+        "x": 7290,
+        "y": 976,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508167
+        }
+      },
+      {
+        "x": 7295,
+        "y": 553,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589258
+        }
+      },
+      {
+        "x": 7300,
+        "y": 200,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453227
+        }
+      },
+      {
+        "x": 7305,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589259
+        }
+      },
+      {
+        "x": 7310,
+        "y": 861,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508168
+        }
+      },
+      {
+        "x": 7315,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589260
+        }
+      },
+      {
+        "x": 7320,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508169
+        }
+      },
+      {
+        "x": 7325,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7482079
+        }
+      },
+      {
+        "x": 7330,
+        "y": 590,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508170
+        }
+      },
+      {
+        "x": 7335,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589261
+        }
+      },
+      {
+        "x": 7340,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508171
+        }
+      },
+      {
+        "x": 7345,
+        "y": 541,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589262
+        }
+      },
+      {
+        "x": 7350,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7457930
+        }
+      },
+      {
+        "x": 7355,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589263
+        }
+      },
+      {
+        "x": 7360,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508172
+        }
+      },
+      {
+        "x": 7365,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589264
+        }
+      },
+      {
+        "x": 7370,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508173
+        }
+      },
+      {
+        "x": 7375,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7487526
+        }
+      },
+      {
+        "x": 7380,
+        "y": 1219,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508174
+        }
+      },
+      {
+        "x": 7385,
+        "y": 675,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589265
+        }
+      },
+      {
+        "x": 7390,
+        "y": 1264,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508175
+        }
+      },
+      {
+        "x": 7395,
+        "y": 583,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589266
+        }
+      },
+      {
+        "x": 7400,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453228
+        }
+      },
+      {
+        "x": 7405,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589267
+        }
+      },
+      {
+        "x": 7410,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508176
+        }
+      },
+      {
+        "x": 7415,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589268
+        }
+      },
+      {
+        "x": 7420,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508177
+        }
+      },
+      {
+        "x": 7425,
+        "y": 730,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7492659
+        }
+      },
+      {
+        "x": 7430,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508178
+        }
+      },
+      {
+        "x": 7435,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589269
+        }
+      },
+      {
+        "x": 7440,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7508179
+        }
+      },
+      {
+        "x": 7445,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589270
+        }
+      },
+      {
+        "x": 7450,
+        "y": 1801,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7457931
+        }
+      },
+      {
+        "x": 7455,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589271
+        }
+      },
+      {
+        "x": 7460,
+        "y": 119,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511702
+        }
+      },
+      {
+        "x": 7465,
+        "y": 98,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589272
+        }
+      },
+      {
+        "x": 7470,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511703
+        }
+      },
+      {
+        "x": 7475,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7497892
+        }
+      },
+      {
+        "x": 7480,
+        "y": 60,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511704
+        }
+      },
+      {
+        "x": 7485,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589273
+        }
+      },
+      {
+        "x": 7490,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511705
+        }
+      },
+      {
+        "x": 7495,
+        "y": 52,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589274
+        }
+      },
+      {
+        "x": 7500,
+        "y": 128,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453229
+        }
+      },
+      {
+        "x": 7505,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589275
+        }
+      },
+      {
+        "x": 7510,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511706
+        }
+      },
+      {
+        "x": 7515,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589276
+        }
+      },
+      {
+        "x": 7520,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511707
+        }
+      },
+      {
+        "x": 7525,
+        "y": 32,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7511708
+        }
+      },
+      {
+        "x": 7530,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7522261
+        }
+      },
+      {
+        "x": 7535,
+        "y": 22,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589277
+        }
+      },
+      {
+        "x": 7540,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7522262
+        }
+      },
+      {
+        "x": 7545,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589278
+        }
+      },
+      {
+        "x": 7550,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7477409
+        }
+      },
+      {
+        "x": 7555,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589279
+        }
+      },
+      {
+        "x": 7560,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7530640
+        }
+      },
+      {
+        "x": 7565,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589280
+        }
+      },
+      {
+        "x": 7570,
+        "y": 2,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7530641
+        }
+      },
+      {
+        "x": 7575,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7547917
+        }
+      },
+      {
+        "x": 7580,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7547918
+        }
+      },
+      {
+        "x": 7585,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589281
+        }
+      },
+      {
+        "x": 7590,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7547919
+        }
+      },
+      {
+        "x": 7595,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589282
+        }
+      },
+      {
+        "x": 7600,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7453230
+        }
+      },
+      {
+        "x": 7605,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589283
+        }
+      },
+      {
+        "x": 7610,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7554680
+        }
+      },
+      {
+        "x": 7615,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589284
+        }
+      },
+      {
+        "x": 7620,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7554681
+        }
+      },
+      {
+        "x": 7625,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7566032
+        }
+      },
+      {
+        "x": 7630,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7566033
+        }
+      },
+      {
+        "x": 7635,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589285
+        }
+      },
+      {
+        "x": 7640,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7566034
+        }
+      },
+      {
+        "x": 7645,
+        "y": 0,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "StrikeId": 7589286
+        }
+      }
+    ],
+    "type": "column",
+    "showCheckbox": false,
+    "selected": false,
+    "showInLegend": true,
+    "showInStats": true,
+    "includeInDataExport": true,
+    "color": "#FCB441",
+    "opacity": 1,
+    "borderColor": "Transparent",
+    "dashStyle": null,
+    "yAxis": 0,
+    "xAxis": 0,
+    "enableMouseTracking": true,
+    "lineWidth": 1,
+    "connectNulls": false,
+    "visible": true,
+    "custom": {
+      "Key": null,
+      "LegendText": null,
+      "LabelText": null
+    },
+    "tooltip": {},
+    "centerInCategory": false,
+    "linkedTo": null,
+    "TooltipUseChartCoordinatesY": false,
+    "Tag": null,
+    "TT": {
+      "Label": null,
+      "Method": "standardTip",
+      "Decimals": 0,
+      "Suffix": null,
+      "AjaxMethod": null,
+      "Tag": null
+    }
+  },
+  "Vol": {
+    "id": null,
+    "name": "Vol",
+    "data": [
+      {
+        "x": 7230,
+        "y": 0.275337923420011,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7235,
+        "y": 0.271414207250928,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7240,
+        "y": 0.267816313222284,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7245,
+        "y": 0.264522208351991,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7250,
+        "y": 0.261510504307807,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7255,
+        "y": 0.258760458120378,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7260,
+        "y": 0.256251971441088,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7265,
+        "y": 0.253965590760345,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7270,
+        "y": 0.251882507640403,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7275,
+        "y": 0.249984558337019,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7280,
+        "y": 0.248254224250559,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7285,
+        "y": 0.246674631576752,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7290,
+        "y": 0.245229551161174,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7295,
+        "y": 0.243903398994007,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7300,
+        "y": 0.242681236180942,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7305,
+        "y": 0.24154876821558,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7310,
+        "y": 0.240492345925304,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7315,
+        "y": 0.239498964612721,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7320,
+        "y": 0.238556264943327,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7325,
+        "y": 0.237652531970525,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7330,
+        "y": 0.236776696314337,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7335,
+        "y": 0.235918332808069,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7340,
+        "y": 0.235067661720677,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7345,
+        "y": 0.234215547665372,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7350,
+        "y": 0.233353500676458,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7355,
+        "y": 0.232473675248912,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7360,
+        "y": 0.231568871284253,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7365,
+        "y": 0.230632533028256,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7370,
+        "y": 0.229658750002272,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7375,
+        "y": 0.228642256566673,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7380,
+        "y": 0.227578431804432,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7385,
+        "y": 0.226463299768511,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7390,
+        "y": 0.22529352948186,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7395,
+        "y": 0.224066435024724,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7400,
+        "y": 0.222779974894365,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7405,
+        "y": 0.221432752819965,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7410,
+        "y": 0.220024017486139,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7415,
+        "y": 0.218553662198246,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7420,
+        "y": 0.217022225566325,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7425,
+        "y": 0.215430890544667,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7430,
+        "y": 0.21378148549411,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7435,
+        "y": 0.212076483468991,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7440,
+        "y": 0.210319002304459,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7445,
+        "y": 0.208512804761995,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7450,
+        "y": 0.206662298907759,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7455,
+        "y": 0.204772537166718,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7460,
+        "y": 0.202849217021139,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7465,
+        "y": 0.200898680952378,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7470,
+        "y": 0.198927916382672,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7475,
+        "y": 0.196944555413211,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7480,
+        "y": 0.194956875260686,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7485,
+        "y": 0.192973797762534,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7490,
+        "y": 0.191004890075419,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7495,
+        "y": 0.18906036374392,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7500,
+        "y": 0.187151075486327,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7505,
+        "y": 0.185288527281955,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7510,
+        "y": 0.183484865323408,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7515,
+        "y": 0.181752880918793,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7520,
+        "y": 0.180106010520831,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7525,
+        "y": 0.178558335348498,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7530,
+        "y": 0.177124581299722,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7535,
+        "y": 0.175820119446144,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7540,
+        "y": 0.17466096568387,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7545,
+        "y": 0.173663780966308,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7550,
+        "y": 0.172845870343735,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7555,
+        "y": 0.172225185204297,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7560,
+        "y": 0.171820320363622,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7565,
+        "y": 0.171650516509544,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7570,
+        "y": 0.171735658688704,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7575,
+        "y": 0.17209627723787,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7580,
+        "y": 0.172753546998138,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7585,
+        "y": 0.173729288188042,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7590,
+        "y": 0.175045965414029,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7595,
+        "y": 0.176726688398048,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7600,
+        "y": 0.178795211861143,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7605,
+        "y": 0.18127593526151,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7610,
+        "y": 0.18419390328927,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      }
+    ],
+    "type": "spline",
+    "showCheckbox": false,
+    "selected": false,
+    "showInLegend": true,
+    "showInStats": true,
+    "includeInDataExport": true,
+    "color": "#e74c3c",
+    "opacity": 1,
+    "dashStyle": null,
+    "yAxis": 1,
+    "xAxis": 0,
+    "enableMouseTracking": true,
+    "lineWidth": 1,
+    "connectNulls": false,
+    "visible": false,
+    "marker": {
+      "enabled": false,
+      "enabledThreshold": 2
+    },
+    "custom": {
+      "Key": null,
+      "LegendText": null,
+      "LabelText": null
+    },
+    "tooltip": {},
+    "centerInCategory": false,
+    "linkedTo": null,
+    "TooltipUseChartCoordinatesY": false,
+    "Tag": null,
+    "TT": null
+  },
+  "VolSettle": {
+    "id": null,
+    "name": "Vol Settle",
+    "data": [
+      {
+        "x": 7230,
+        "y": 0.27533792342001107,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7235,
+        "y": 0.2714142072509276,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7240,
+        "y": 0.2678163132222835,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7245,
+        "y": 0.26452220835199114,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7250,
+        "y": 0.2615105043078074,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7255,
+        "y": 0.25876045812037773,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7260,
+        "y": 0.25625197144108824,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7265,
+        "y": 0.25396559076034464,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7270,
+        "y": 0.25188250764040276,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7275,
+        "y": 0.24998455833701883,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7280,
+        "y": 0.24825422425055876,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7285,
+        "y": 0.2466746315767523,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7290,
+        "y": 0.24522955116117373,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7295,
+        "y": 0.24390339899400715,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7300,
+        "y": 0.2426812361809425,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7305,
+        "y": 0.2415487682155799,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7310,
+        "y": 0.2404923459253041,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7315,
+        "y": 0.23949896461272147,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7320,
+        "y": 0.23855626494332682,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7325,
+        "y": 0.23765253197052516,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7330,
+        "y": 0.23677669631433673,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7335,
+        "y": 0.23591833280806895,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7340,
+        "y": 0.23506766172067728,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7345,
+        "y": 0.23421554766537156,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7350,
+        "y": 0.23335350067645777,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7355,
+        "y": 0.2324736752489116,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7360,
+        "y": 0.23156887128425296,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7365,
+        "y": 0.23063253302825615,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7370,
+        "y": 0.22965875000227243,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7375,
+        "y": 0.22864225656667259,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7380,
+        "y": 0.2275784318044316,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7385,
+        "y": 0.2264632997685112,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7390,
+        "y": 0.22529352948185988,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7395,
+        "y": 0.22406643502472434,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7400,
+        "y": 0.2227799748943653,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7405,
+        "y": 0.22143275281996466,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7410,
+        "y": 0.2200240174861392,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7415,
+        "y": 0.21855366219824646,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7420,
+        "y": 0.21702222556632478,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7425,
+        "y": 0.2154308905446669,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7430,
+        "y": 0.2137814854941098,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7435,
+        "y": 0.21207648346899077,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7440,
+        "y": 0.210319002304459,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7445,
+        "y": 0.20851280476199463,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7450,
+        "y": 0.20666229890775867,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7455,
+        "y": 0.2047725371667184,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7460,
+        "y": 0.20284921702113934,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7465,
+        "y": 0.20089868095237762,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7470,
+        "y": 0.19892791638267227,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7475,
+        "y": 0.19694455541321076,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7480,
+        "y": 0.1949568752606865,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7485,
+        "y": 0.19297379776253365,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7490,
+        "y": 0.1910048900754191,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7495,
+        "y": 0.18906036374391988,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7500,
+        "y": 0.1871510754863266,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7505,
+        "y": 0.18528852728195488,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7510,
+        "y": 0.18348486532340758,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7515,
+        "y": 0.18175288091879338,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7520,
+        "y": 0.18010601052083075,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7525,
+        "y": 0.17855833534849808,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7530,
+        "y": 0.1771245812997222,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7535,
+        "y": 0.1758201194461435,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7540,
+        "y": 0.17466096568387002,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7545,
+        "y": 0.17366378096630797,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7550,
+        "y": 0.17284587034373544,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7555,
+        "y": 0.1722251852042973,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7560,
+        "y": 0.17182032036362216,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7565,
+        "y": 0.1716505165095441,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7570,
+        "y": 0.17173565868870355,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7575,
+        "y": 0.1720962772378698,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7580,
+        "y": 0.1727535469981376,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7585,
+        "y": 0.17372928818804212,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7590,
+        "y": 0.17504596541402861,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7595,
+        "y": 0.17672668839804828,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7600,
+        "y": 0.1787952118611429,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7605,
+        "y": 0.1812759352615103,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      },
+      {
+        "x": 7610,
+        "y": 0.18419390328926966,
+        "color": null,
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": null
+      }
+    ],
+    "type": "spline",
+    "showCheckbox": false,
+    "selected": false,
+    "showInLegend": true,
+    "showInStats": true,
+    "includeInDataExport": true,
+    "color": "#e74c3c",
+    "opacity": 1,
+    "dashStyle": "dash",
+    "yAxis": 1,
+    "xAxis": 0,
+    "enableMouseTracking": true,
+    "lineWidth": 1,
+    "connectNulls": false,
+    "visible": true,
+    "marker": {
+      "enabled": false,
+      "enabledThreshold": 2
+    },
+    "custom": {
+      "Key": null,
+      "LegendText": null,
+      "LabelText": null
+    },
+    "tooltip": {},
+    "centerInCategory": false,
+    "linkedTo": null,
+    "TooltipUseChartCoordinatesY": false,
+    "Tag": null,
+    "TT": null
+  },
+  "Ranges": {
+    "id": null,
+    "name": "Ranges",
+    "data": [
+      {
+        "x": 7363.262280905794,
+        "x2": 7433.25,
+        "y": 0,
+        "color": "#FFAAAA",
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "Range": 1
+        },
+        "dataLabels": {
+          "enabled": true,
+          "format": "69.99"
+        }
+      },
+      {
+        "x": 7433.25,
+        "x2": 7503.237709356856,
+        "y": 0,
+        "color": "#FFAAAA",
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "Range": 1
+        },
+        "dataLabels": {
+          "enabled": true,
+          "format": "69.99"
+        }
+      },
+      {
+        "x": 7294.256866134107,
+        "x2": 7363.262280905794,
+        "y": 0,
+        "color": "#FFD3BA",
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "Range": 2
+        },
+        "dataLabels": {
+          "enabled": true,
+          "format": "138.99"
+        }
+      },
+      {
+        "x": 7503.237709356856,
+        "x2": 7574.2201328945575,
+        "y": 0,
+        "color": "#FFD3BA",
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "Range": 2
+        },
+        "dataLabels": {
+          "enabled": true,
+          "format": "140.97"
+        }
+      },
+      {
+        "x": 7225.898141251517,
+        "x2": 7294.256866134107,
+        "y": 0,
+        "color": "#FFF9DD",
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "Range": 3
+        },
+        "dataLabels": {
+          "enabled": true,
+          "format": "207.35"
+        }
+      },
+      {
+        "x": 7574.2201328945575,
+        "x2": 7645.874067138231,
+        "y": 0,
+        "color": "#FFF9DD",
+        "borderColor": null,
+        "borderWidth": 0,
+        "name": null,
+        "TipLabel": null,
+        "Tag": {
+          "Range": 3
+        },
+        "dataLabels": {
+          "enabled": true,
+          "format": "212.62"
+        }
+      }
+    ],
+    "type": "xrange",
+    "showCheckbox": false,
+    "selected": false,
+    "showInLegend": true,
+    "showInStats": true,
+    "includeInDataExport": true,
+    "color": null,
+    "opacity": 1,
+    "borderColor": "Transparent",
+    "dashStyle": null,
+    "yAxis": 2,
+    "xAxis": 0,
+    "enableMouseTracking": true,
+    "lineWidth": 1,
+    "connectNulls": false,
+    "visible": true,
+    "custom": {
+      "Key": null,
+      "LegendText": null,
+      "LabelText": null
+    },
+    "tooltip": {},
+    "centerInCategory": false,
+    "linkedTo": null,
+    "TooltipUseChartCoordinatesY": false,
+    "Tag": null,
+    "TT": null
+  },
+  "ExpirationId": 65824,
+  "FuturePrice": 7433.25,
+  "ATMVol": 0.206662298907759,
+  "DTE": 0.757673611111111,
+  "ContainerId": "MainContent_ucViewControl_IntegratedV2VExpectedRange_ucChart_divChart",
+  "UpdateLabelId": null,
+  "Title": "E3DK6 Intraday Volume",
+  "Subtitle": "<span style='color:#FCB441'>Put:</span> 20,317&nbsp;&nbsp;<span style='color:#418CF0'>Call:</span> 33,556&nbsp;&nbsp;<span style='color:#8C8C8C'>Vol:</span> 20.67&nbsp;&nbsp;<span style='color:#8C8C8C'>Vol Chg:</span> <span style='color:#ff0000'>-0.05</span>&nbsp;&nbsp;<span style='color:#8C8C8C'>Future Chg:</span> <span style='color:#ff0000'>-18.5</span>",
+  "ChartType": null,
+  "WatermarkImg": "https://users.quikstrike.net/images/ChartBG-V2.png",
+  "WatermarkPos": null,
+  "WatermarkX": 0,
+  "WatermarkY": 0,
+  "Watermark2Img": null,
+  "Watermark2Size": null,
+  "Watermark2Pos": null,
+  "Watermark2X": 0,
+  "Watermark2Y": 0,
+  "DarkMode": false,
+  "Width": null,
+  "IsPdf": false,
+  "LabelColor": "#8C8C8C",
+  "Language": {
+    "decimalPoint": ".",
+    "thousandsSep": ",",
+    "noData": "No data to display",
+    "numericSymbols": [
+      "K",
+      "M",
+      "B",
+      "T"
+    ]
+  },
+  "InstanceParm": "?insid=222933051&qsid=6ffd6173-e11a-4c0f-b703-0f04462944d1",
+  "Responsive": false,
+  "AutoUpdate": true,
+  "IncludeIndicators": false,
+  "IncludeMoreScript": false,
+  "AllowDataExport": false,
+  "IncludeStats": false,
+  "IncludePatternIndexing": false,
+  "IncludeXRange": true,
+  "IncludeAnnotations": false,
+  "IncludeVolumeByPrice": false,
+  "RangeSelector": null,
+  "DefaultRangeIndex": null,
+  "Colors": {
+    "Color1": "#2ecc71",
+    "Color2": "#f1c40f",
+    "Color3": "#e74c3c",
+    "Color4": "Green",
+    "Color5": "#ff1493",
+    "Color6": "#b2c3c4",
+    "CurrentPrice": "DodgerBlue",
+    "SettlePrice": "Orange",
+    "HighPrice": "Green",
+    "LowPrice": "Red",
+    "Negative": "#ff0000",
+    "Positive": "#008000",
+    "No": "#FF6D6D",
+    "Yes": "#44E500",
+    "Call": "#418CF0",
+    "Put": "#FCB441",
+    "ER1": "#FFAAAA",
+    "ER2": "#FFD3BA",
+    "ER3": "#FFF9DD",
+    "Palette": [
+      "#2980b9",
+      "#d35400",
+      "#16a085",
+      "#8e44ad",
+      "#c0392b",
+      "#7f8c8d",
+      "#2c3e50",
+      "#f39c12"
+    ],
+    "ColorCount": 8
+  },
+  "Theme": {
+    "AnnotationColor1": "black",
+    "AnnotationColorLight": "#9B9B9B",
+    "AnnotationCurrentATM": "#EABB00",
+    "AnnotationSettleATM": "#C0C0C0",
+    "TooltipColor": "#404040",
+    "TooltipBG": "#F4F4F4",
+    "VividColor": "#000"
+  },
+  "TooltipPositioner": {
+    "ForceY0": true,
+    "YAdjust": 50,
+    "Type": "static"
+  },
+  "LegendPositioner": {
+    "verticalAlign": "top",
+    "align": "right",
+    "floating": true,
+    "x": -30,
+    "y": -40,
+    "Type": "topright"
+  },
+  "LegendFormatter": {
+    "Type": "standard"
+  },
+  "Series": [],
+  "Indicators": [],
+  "PlotLines": [
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7311.98516489528,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "5ΔP",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7367.37853928073,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "15ΔP",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7398.89281386506,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "25ΔP",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7421.85770825347,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "35ΔP",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7442.3719578539,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "45ΔP",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7461.71116431389,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "45ΔC",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7479.80783666691,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "35ΔC",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7497.8036231881,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "25ΔC",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7519.67373395951,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "15ΔC",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7552.92355414472,
+      "color": "#9B9B9B",
+      "dashStyle": "dash",
+      "zIndex": 1,
+      "label": {
+        "text": "5ΔC",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "#9B9B9B",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "width": 1,
+      "value": 7433.25,
+      "color": "black",
+      "dashStyle": "dash",
+      "zIndex": 50,
+      "label": {
+        "text": "Future: 7433.25",
+        "align": "left",
+        "textAlign": "left",
+        "style": {
+          "color": "black",
+          "backgroundColor": null,
+          "fontSize": "13px"
+        }
+      }
+    }
+  ],
+  "PlotBands": [
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "from": 7363.262280905794,
+      "to": 7503.237709356856,
+      "color": "rgba(169, 169, 169, .25)"
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "from": 7294.256866134107,
+      "to": 7574.2201328945575,
+      "color": "rgba(169, 169, 169, .2)"
+    },
+    {
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "id": null,
+      "from": 7225.898141251517,
+      "to": 7645.874067138231,
+      "color": "rgba(169, 169, 169, .15)"
+    }
+  ],
+  "LabelFormatters": [
+    {
+      "Type": "strike",
+      "IsXAxis": true,
+      "AxisIndex": 0,
+      "ProductIndex": -1
+    },
+    {
+      "Type": "vol",
+      "IsXAxis": false,
+      "AxisIndex": 1,
+      "ProductIndex": -1
+    }
+  ],
+  "Axes": [],
+  "Product": {
+    "Id": 103,
+    "Name": "S&P 500 (ES|ES)",
+    "Culture": "en-US",
+    "ThousandsSep": ",",
+    "FutureFormat": {
+      "Precision": 2,
+      "DecimalBase": 100,
+      "ScaleFactor": 0,
+      "UseSeparator": false,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "StrikeFormat": {
+      "Precision": 0,
+      "DecimalBase": 0,
+      "ScaleFactor": 0,
+      "UseSeparator": false,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "VolatilityFormat": {
+      "Precision": 2,
+      "DecimalBase": 0,
+      "ScaleFactor": 100,
+      "UseSeparator": true,
+      "RemoveTrailing0s": false,
+      "Culture": "en-US"
+    },
+    "OptionFormat": {
+      "Precision": 2,
+      "DecimalBase": 100,
+      "ScaleFactor": 1,
+      "UseSeparator": false,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "DeltaFormat": {
+      "Precision": 2,
+      "DecimalBase": 0,
+      "ScaleFactor": 1,
+      "UseSeparator": true,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "GammaFormat": {
+      "Precision": 5,
+      "DecimalBase": 0,
+      "ScaleFactor": 1,
+      "UseSeparator": true,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "VegaFormat": {
+      "Precision": 3,
+      "DecimalBase": 0,
+      "ScaleFactor": 0.01,
+      "UseSeparator": true,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "ThetaFormat": {
+      "Precision": 3,
+      "DecimalBase": 0,
+      "ScaleFactor": 1,
+      "UseSeparator": true,
+      "RemoveTrailing0s": true,
+      "Culture": "en-US"
+    },
+    "GreekFormat": {
+      "Precision": 3,
+      "DecimalBase": 0,
+      "ScaleFactor": 1,
+      "UseSeparator": true,
+      "RemoveTrailing0s": true,
+      "Culture": null
+    },
+    "DefaultStrikeInterval": 5,
+    "OptionTickDollarValue": 50,
+    "OptionTickAmount": 1,
+    "IsTreasury": false
+  },
+  "Products": null,
+  "SettleTxt": "Settle",
+  "Tag": null,
+  "IsMobile": false,
+  "IsCompactMobile": false,
+  "IsMiniMobile": false
+}

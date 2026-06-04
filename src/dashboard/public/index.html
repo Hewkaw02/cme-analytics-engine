@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CME Quant Dashboard — Institutional Analytics</title>
+  <meta name="description" content="Real-time GEX exposure, volume profile, market regime analysis, and backtesting for CME futures options." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    /* ===== CSS DESIGN SYSTEM ===== */
+    :root {
+      /* Brand palette */
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: #151c2d;
+      --bg-card-hover: #1a2238;
+      --bg-glass: rgba(21, 28, 45, 0.75);
+
+      /* Borders */
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-accent: rgba(99, 179, 237, 0.25);
+
+      /* Text */
+      --text-primary: #e8edf5;
+      --text-secondary: #8b95a8;
+      --text-muted: #5a6478;
+
+      /* Accents */
+      --accent-blue: #63b3ed;
+      --accent-cyan: #4fd1c5;
+      --accent-green: #48bb78;
+      --accent-red: #fc8181;
+      --accent-orange: #f6ad55;
+      --accent-purple: #b794f4;
+      --accent-yellow: #fbd38d;
+
+      /* Gradients */
+      --gradient-blue: linear-gradient(135deg, #4299e1, #667eea);
+      --gradient-green: linear-gradient(135deg, #48bb78, #38b2ac);
+      --gradient-red: linear-gradient(135deg, #fc8181, #f56565);
+      --gradient-purple: linear-gradient(135deg, #9f7aea, #667eea);
+      --gradient-card: linear-gradient(145deg, rgba(21,28,45,0.9), rgba(17,24,39,0.95));
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.5);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.6);
+      --shadow-glow-blue: 0 0 20px rgba(99,179,237,0.15);
+      --shadow-glow-green: 0 0 20px rgba(72,187,120,0.15);
+      --shadow-glow-red: 0 0 20px rgba(252,129,129,0.15);
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      /* Radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+
+      /* Transition */
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html { font-size: 14px; scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Subtle noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      background: rgba(10, 14, 23, 0.85);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: var(--space-md) var(--space-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header__brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .header__logo {
+      width: 36px;
+      height: 36px;
+      background: var(--gradient-blue);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: white;
+      box-shadow: var(--shadow-glow-blue);
+    }
+
+    .header__title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, var(--text-primary) 60%, var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header__subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .header__controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    /* ===== SYMBOL SELECTOR ===== */
+    .symbol-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: var(--space-sm) var(--space-lg) var(--space-sm) var(--space-md);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b95a8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    .symbol-select:hover {
+      border-color: var(--accent-blue);
+      box-shadow: var(--shadow-glow-blue);
+    }
+
+    .symbol-select:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(72,187,120,0.5); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(72,187,120,0); }
+    }
+
+    /* ===== MAIN LAYOUT ===== */
+    .main {
+      position: relative;
+      z-index: 1;
+      padding: var(--space-lg) var(--space-xl);
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    /* ===== TOP KPI ROW ===== */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+
+    .kpi-card {
+      background: var(--gradient-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      transition: var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--gradient-blue);
+      opacity: 0;
+      transition: var(--transition-base);
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-card:hover::before { opacity: 1; }
+
+    .kpi-card__label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-xs);
+    }
+
+    .kpi-card__value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .kpi-card__sub {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .kpi-card--green .kpi-card__value { color: var(--accent-green); }
+    .kpi-card--red .kpi-card__value { color: var(--accent-red); }
+    .kpi-card--blue .kpi-card__value { color: var(--accent-blue); }
+    .kpi-card--purple .kpi-card__value { color: var(--accent-purple); }
+    .kpi-card--cyan .kpi-card__value { color: var(--accent-cyan); }
+    .kpi-card--orange .kpi-card__value { color: var(--accent-orange); }
+
+    .kpi-card--green::before { background: var(--gradient-green); }
+    .kpi-card--red::before { background: var(--gradient-red); }
+    .kpi-card--purple::before { background: var(--gradient-purple); }
+
+    /* ===== GRID PANELS ===== */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+
+    .panel {
+      background: var(--gradient-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      min-height: 400px;
+      transition: var(--transition-base);
+    }
+
+    .panel:hover {
+      border-color: var(--border-accent);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .panel--full {
+      grid-column: 1 / -1;
+    }
+
+    .panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .panel__title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .panel__title-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+    }
+
+    .panel__badge {
+      font-size: 0.65rem;
+      background: var(--bg-secondary);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    /* ===== GEX BAR CHART ===== */
+    .gex-chart-container {
+      position: relative;
+      width: 100%;
+      height: 340px;
+    }
+
+    .gex-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      height: 14px;
+      transition: var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .gex-bar:hover {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .gex-bar__label {
+      width: 60px;
+      text-align: right;
+      padding-right: 6px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .gex-bar__bar-container {
+      flex: 1;
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .gex-bar__fill {
+      height: 10px;
+      border-radius: 2px;
+      min-width: 1px;
+      transition: var(--transition-fast);
+    }
+
+    .gex-bar__fill--positive {
+      background: linear-gradient(90deg, rgba(72,187,120,0.8), rgba(72,187,120,0.4));
+    }
+
+    .gex-bar__fill--negative {
+      background: linear-gradient(270deg, rgba(252,129,129,0.8), rgba(252,129,129,0.4));
+    }
+
+    .gex-bar__value {
+      position: absolute;
+      right: 4px;
+      color: var(--text-muted);
+      font-size: 0.55rem;
+    }
+
+    /* ===== REGIME METER ===== */
+    .regime-meter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-xl) 0;
+    }
+
+    .regime-gauge {
+      position: relative;
+      width: 220px;
+      height: 130px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .regime-gauge__arc {
+      width: 220px;
+      height: 110px;
+      border-radius: 110px 110px 0 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .regime-gauge__bg {
+      width: 100%;
+      height: 100%;
+      background: conic-gradient(
+        from 180deg at 50% 100%,
+        var(--accent-red) 0deg,
+        var(--accent-orange) 45deg,
+        var(--accent-yellow) 90deg,
+        var(--accent-green) 135deg,
+        var(--accent-cyan) 180deg
+      );
+      opacity: 0.25;
+    }
+
+    .regime-gauge__inner {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 80px;
+      border-radius: 80px 80px 0 0;
+      background: var(--bg-card);
+    }
+
+    .regime-gauge__needle {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      height: 85px;
+      background: linear-gradient(to top, var(--accent-blue), transparent);
+      transform-origin: bottom center;
+      transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+      border-radius: 2px;
+    }
+
+    .regime-gauge__dot {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 10px;
+      height: 10px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent-blue);
+    }
+
+    .regime-label {
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: var(--space-xs);
+    }
+
+    .regime-sublabel {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .regime-factors {
+      width: 100%;
+      margin-top: var(--space-lg);
+    }
+
+    .regime-factor {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-sm) 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+    }
+
+    .regime-factor:last-child { border-bottom: none; }
+
+    .regime-factor__name {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .regime-factor__value {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+
+    /* ===== EXPOSURE TABLE ===== */
+    .exposure-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.78rem;
+    }
+
+    .exposure-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.65rem;
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+    }
+
+    .exposure-table td {
+      padding: var(--space-xs) var(--space-md);
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+    }
+
+    .exposure-table tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .exposure-table__scroll {
+      max-height: 340px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-subtle) transparent;
+    }
+
+    /* ===== BACKTESTS TABLE ===== */
+    .bt-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .bt-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.65rem;
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .bt-table td {
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    .bt-table tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* ===== CHART CONTAINER ===== */
+    .chart-container {
+      width: 100%;
+      height: 340px;
+    }
+
+    /* ===== VALUE HELPERS ===== */
+    .val-positive { color: var(--accent-green); }
+    .val-negative { color: var(--accent-red); }
+    .val-neutral { color: var(--text-secondary); }
+
+    /* ===== LOADING SKELETON ===== */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      height: 14px;
+      width: 80%;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-block {
+      height: 200px;
+      width: 100%;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .empty-state__icon {
+      font-size: 2rem;
+      margin-bottom: var(--space-md);
+      opacity: 0.5;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1200px) {
+      .panels { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: var(--space-sm) var(--space-md); flex-wrap: wrap; gap: var(--space-sm); }
+      .main { padding: var(--space-md); }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      html { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header__brand">
+      <div class="header__logo">Q</div>
+      <div>
+        <div class="header__title">CME Quant Dashboard</div>
+        <div class="header__subtitle">Institutional Analytics Platform</div>
+      </div>
+    </div>
+    <div class="header__controls">
+      <select id="symbolSelect" class="symbol-select">
+        <option value="ES">ES — E-mini S&P 500</option>
+        <option value="NQ">NQ — E-mini Nasdaq-100</option>
+        <option value="GC">GC — Gold Futures</option>
+      </select>
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <!-- KPI Row -->
+    <section id="kpiRow" class="kpi-row">
+      <div class="kpi-card kpi-card--blue" id="kpiSpot">
+        <div class="kpi-card__label">Spot Price</div>
+        <div class="kpi-card__value">—</div>
+        <div class="kpi-card__sub" id="kpiSpotDate">Loading...</div>
+      </div>
+      <div class="kpi-card kpi-card--green" id="kpiNetGex">
+        <div class="kpi-card__label">Net GEX ($)</div>
+        <div class="kpi-card__value">—</div>
+        <div class="kpi-card__sub">Gamma Exposure</div>
+      </div>
+      <div class="kpi-card kpi-card--purple" id="kpiFlip">
+        <div class="kpi-card__label">GEX Flip Price</div>
+        <div class="kpi-card__value">—</div>
+        <div class="kpi-card__sub">Dealer Crossover</div>
+      </div>
+      <div class="kpi-card kpi-card--cyan" id="kpiRegime">
+        <div class="kpi-card__label">Market Regime</div>
+        <div class="kpi-card__value">—</div>
+        <div class="kpi-card__sub">Classification</div>
+      </div>
+      <div class="kpi-card kpi-card--orange" id="kpiPCR">
+        <div class="kpi-card__label">Put/Call OI Ratio</div>
+        <div class="kpi-card__value">—</div>
+        <div class="kpi-card__sub">Sentiment Signal</div>
+      </div>
+      <div class="kpi-card" id="kpiMaxPain">
+        <div class="kpi-card__label">Max Pain Strike</div>
+        <div class="kpi-card__value">—</div>
+        <div class="kpi-card__sub">Expiry Magnet</div>
+      </div>
+    </section>
+
+    <!-- Panel Grid -->
+    <section class="panels">
+      <!-- GEX Profile -->
+      <div class="panel" id="panelGex">
+        <div class="panel__header">
+          <div class="panel__title">
+            <span class="panel__title-icon" style="background:var(--gradient-green);">Γ</span>
+            GEX Profile by Strike
+          </div>
+          <div class="panel__badge" id="gexBadge">—</div>
+        </div>
+        <div class="gex-chart-container" id="gexChart">
+          <div class="skeleton skeleton-block"></div>
+        </div>
+      </div>
+
+      <!-- Market Regime -->
+      <div class="panel" id="panelRegime">
+        <div class="panel__header">
+          <div class="panel__title">
+            <span class="panel__title-icon" style="background:var(--gradient-purple);">R</span>
+            Market Regime
+          </div>
+          <div class="panel__badge" id="regimeBadge">—</div>
+        </div>
+        <div id="regimeContent">
+          <div class="skeleton skeleton-block"></div>
+        </div>
+      </div>
+
+      <!-- Price Chart -->
+      <div class="panel" id="panelChart">
+        <div class="panel__header">
+          <div class="panel__title">
+            <span class="panel__title-icon" style="background:var(--gradient-blue);">📊</span>
+            Price Action & Levels
+          </div>
+          <div class="panel__badge" id="chartBadge">1m bars</div>
+        </div>
+        <div class="chart-container" id="priceChartContainer"></div>
+      </div>
+
+      <!-- Exposure Table -->
+      <div class="panel" id="panelExposure">
+        <div class="panel__header">
+          <div class="panel__title">
+            <span class="panel__title-icon" style="background:var(--gradient-red);">Δ</span>
+            Exposure Table
+          </div>
+          <div class="panel__badge" id="exposureBadge">Top Strikes</div>
+        </div>
+        <div class="exposure-table__scroll" id="exposureTableContainer">
+          <div class="skeleton skeleton-block"></div>
+        </div>
+      </div>
+
+      <!-- Backtest Results -->
+      <div class="panel panel--full" id="panelBacktests">
+        <div class="panel__header">
+          <div class="panel__title">
+            <span class="panel__title-icon" style="background:var(--gradient-purple);">⚡</span>
+            Backtest Runs
+          </div>
+          <div class="panel__badge" id="btBadge">Recent</div>
+        </div>
+        <div id="backtestsContainer">
+          <div class="skeleton skeleton-block"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ===================================================================
+    // App State
+    // ===================================================================
+    const state = {
+      symbol: 'ES',
+      exposure: null,
+      regime: null,
+      oiSummary: null,
+      bars: [],
+      backtests: [],
+    };
+
+    const API = '';  // Same origin
+
+    // ===================================================================
+    // Helpers
+    // ===================================================================
+    function fmt(n, decimals = 0) {
+      if (n == null || isNaN(n)) return '—';
+      return Number(n).toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+    }
+
+    function fmtCompact(n) {
+      if (n == null || isNaN(n)) return '—';
+      const abs = Math.abs(n);
+      if (abs >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (abs >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      if (abs >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toFixed(0);
+    }
+
+    function valClass(n) {
+      if (n > 0) return 'val-positive';
+      if (n < 0) return 'val-negative';
+      return 'val-neutral';
+    }
+
+    async function fetchJSON(url) {
+      try {
+        const res = await fetch(url);
+        return await res.json();
+      } catch (err) {
+        console.error('Fetch failed:', url, err);
+        return null;
+      }
+    }
+
+    // ===================================================================
+    // Data Fetching
+    // ===================================================================
+    async function loadAll() {
+      document.getElementById('statusText').textContent = 'Loading...';
+
+      const [exposure, regime, oiSummary, bars, backtests] = await Promise.all([
+        fetchJSON(`${API}/api/exposure/${state.symbol}`),
+        fetchJSON(`${API}/api/regime/${state.symbol}`),
+        fetchJSON(`${API}/api/oi-summary/${state.symbol}`),
+        fetchJSON(`${API}/api/bars/${state.symbol}?timeframe=1m&limit=500`),
+        fetchJSON(`${API}/api/backtests?symbol=${state.symbol}&limit=10`),
+      ]);
+
+      state.exposure = exposure;
+      state.regime = regime;
+      state.oiSummary = oiSummary;
+      state.bars = bars || [];
+      state.backtests = backtests || [];
+
+      renderKPIs();
+      renderGEXChart();
+      renderRegime();
+      renderPriceChart();
+      renderExposureTable();
+      renderBacktests();
+
+      document.getElementById('statusText').textContent =
+        `Updated ${new Date().toLocaleTimeString()}`;
+    }
+
+    // ===================================================================
+    // KPI Cards
+    // ===================================================================
+    function renderKPIs() {
+      const e = state.exposure || {};
+      const r = state.regime || {};
+      const oi = state.oiSummary?.summaries?.[0] || {};
+
+      // Spot
+      const spotCard = document.getElementById('kpiSpot');
+      spotCard.querySelector('.kpi-card__value').textContent = fmt(e.spotPrice, 2);
+      document.getElementById('kpiSpotDate').textContent = e.tradeDate || '—';
+
+      // Net GEX
+      const gexCard = document.getElementById('kpiNetGex');
+      const gexVal = gexCard.querySelector('.kpi-card__value');
+      gexVal.textContent = fmtCompact(e.netGex);
+      gexCard.className = `kpi-card ${e.netGex >= 0 ? 'kpi-card--green' : 'kpi-card--red'}`;
+
+      // GEX Flip
+      const flipCard = document.getElementById('kpiFlip');
+      flipCard.querySelector('.kpi-card__value').textContent =
+        e.gexFlipPrice ? fmt(e.gexFlipPrice, 2) : '—';
+
+      // Regime
+      const regimeCard = document.getElementById('kpiRegime');
+      const regimeVal = regimeCard.querySelector('.kpi-card__value');
+      regimeVal.textContent = r.regime || '—';
+      const sub = regimeCard.querySelector('.kpi-card__sub');
+      if (r.bias != null) {
+        sub.textContent = `Bias: ${r.bias > 0 ? '+' : ''}${(r.bias * 100).toFixed(0)}% | ${r.gammaState || ''} Γ`;
+      }
+
+      // PCR
+      const pcrCard = document.getElementById('kpiPCR');
+      pcrCard.querySelector('.kpi-card__value').textContent =
+        oi.put_call_oi_ratio ? Number(oi.put_call_oi_ratio).toFixed(2) : '—';
+
+      // Max Pain
+      const mpCard = document.getElementById('kpiMaxPain');
+      mpCard.querySelector('.kpi-card__value').textContent =
+        oi.max_pain_strike ? fmt(Number(oi.max_pain_strike), 0) : '—';
+    }
+
+    // ===================================================================
+    // GEX Bar Chart
+    // ===================================================================
+    function renderGEXChart() {
+      const container = document.getElementById('gexChart');
+      const badge = document.getElementById('gexBadge');
+      const byStrike = state.exposure?.byStrike || [];
+
+      if (byStrike.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state__icon">📊</div>No GEX data available</div>';
+        return;
+      }
+
+      badge.textContent = `${byStrike.length} strikes`;
+
+      // Find max absolute GEX for scaling
+      const maxAbs = Math.max(...byStrike.map(s => Math.abs(s.netGex)), 1);
+
+      // Build horizontal bar chart
+      let html = '';
+      const spot = state.exposure?.spotPrice || 0;
+
+      // Only show strikes near spot (±30 strikes)
+      const sorted = byStrike.sort((a, b) => a.strike - b.strike);
+      const spotIdx = sorted.findIndex(s => s.strike >= spot);
+      const startIdx = Math.max(0, spotIdx - 15);
+      const endIdx = Math.min(sorted.length, spotIdx + 16);
+      const visible = sorted.slice(startIdx, endIdx);
+
+      for (const s of visible) {
+        const pct = Math.abs(s.netGex) / maxAbs * 100;
+        const isPos = s.netGex >= 0;
+        const isSpot = Math.abs(s.strike - spot) < (spot * 0.002);
+        const labelStyle = isSpot ? 'color:var(--accent-yellow);font-weight:700' : '';
+
+        html += `<div class="gex-bar" title="Strike ${s.strike}: Net GEX ${fmtCompact(s.netGex)}">`;
+        html += `<div class="gex-bar__label" style="${labelStyle}">${fmt(s.strike, 0)}</div>`;
+        html += `<div class="gex-bar__bar-container">`;
+
+        if (isPos) {
+          html += `<div class="gex-bar__fill gex-bar__fill--positive" style="width:${pct}%"></div>`;
+        } else {
+          html += `<div class="gex-bar__fill gex-bar__fill--negative" style="width:${pct}%;margin-left:auto"></div>`;
+        }
+
+        html += `<div class="gex-bar__value">${fmtCompact(s.netGex)}</div>`;
+        html += `</div></div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ===================================================================
+    // Market Regime Gauge
+    // ===================================================================
+    function renderRegime() {
+      const container = document.getElementById('regimeContent');
+      const badge = document.getElementById('regimeBadge');
+      const r = state.regime || {};
+
+      if (!r.regime) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state__icon">🎯</div>No regime data</div>';
+        return;
+      }
+
+      badge.textContent = r.tradeDate || '—';
+
+      // Bias angle: -1 → -90deg, +1 → +90deg, 0 → 0deg
+      const bias = r.bias || 0;
+      const angle = bias * 90;
+
+      // Regime color
+      const regimeColors = {
+        MeanReverting: 'var(--accent-green)',
+        TrendFollowing: 'var(--accent-cyan)',
+        HighVolatilityRisk: 'var(--accent-red)',
+        Consolidating: 'var(--accent-yellow)',
+      };
+      const regimeColor = regimeColors[r.regime] || 'var(--text-secondary)';
+
+      const factors = r.factors || {};
+
+      container.innerHTML = `
+        <div class="regime-meter">
+          <div class="regime-gauge">
+            <div class="regime-gauge__arc">
+              <div class="regime-gauge__bg"></div>
+              <div class="regime-gauge__inner"></div>
+            </div>
+            <div class="regime-gauge__needle" style="transform: rotate(${angle}deg)">
+              <div class="regime-gauge__dot"></div>
+            </div>
+          </div>
+          <div class="regime-label" style="color:${regimeColor}">${r.regime}</div>
+          <div class="regime-sublabel">${r.gammaState || ''} Gamma · Confidence ${r.confidence || 0}%</div>
+          <div class="regime-factors">
+            <div class="regime-factor">
+              <span class="regime-factor__name">GEX State</span>
+              <span class="regime-factor__value">${factors.gexState || '—'}</span>
+            </div>
+            <div class="regime-factor">
+              <span class="regime-factor__name">Spot to Flip</span>
+              <span class="regime-factor__value">${factors.spotToFlip || '—'}</span>
+            </div>
+            <div class="regime-factor">
+              <span class="regime-factor__name">Spot to VWAP</span>
+              <span class="regime-factor__value">${factors.spotToVwap || '—'}</span>
+            </div>
+            <div class="regime-factor">
+              <span class="regime-factor__name">Value Area</span>
+              <span class="regime-factor__value">${factors.spotToValueArea || '—'}</span>
+            </div>
+            <div class="regime-factor">
+              <span class="regime-factor__name">Volume Delta</span>
+              <span class="regime-factor__value">${factors.volumeDelta || '—'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===================================================================
+    // Price Chart (TradingView Lightweight Charts)
+    // ===================================================================
+    let chartInstance = null;
+
+    function renderPriceChart() {
+      const container = document.getElementById('priceChartContainer');
+      const bars = state.bars;
+
+      if (!bars || bars.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state__icon">📈</div>No bar data available</div>';
+        return;
+      }
+
+      // Clear previous chart
+      container.innerHTML = '';
+
+      const chart = LightweightCharts.createChart(container, {
+        layout: {
+          background: { type: 'solid', color: 'transparent' },
+          textColor: '#8b95a8',
+          fontFamily: 'Inter, sans-serif',
+          fontSize: 11,
+        },
+        grid: {
+          vertLines: { color: 'rgba(255,255,255,0.03)' },
+          horzLines: { color: 'rgba(255,255,255,0.03)' },
+        },
+        crosshair: {
+          mode: LightweightCharts.CrosshairMode.Normal,
+          vertLine: { color: 'rgba(99,179,237,0.3)', style: 2, width: 1 },
+          horzLine: { color: 'rgba(99,179,237,0.3)', style: 2, width: 1 },
+        },
+        timeScale: {
+          borderColor: 'rgba(255,255,255,0.06)',
+          timeVisible: true,
+          secondsVisible: false,
+        },
+        rightPriceScale: {
+          borderColor: 'rgba(255,255,255,0.06)',
+        },
+        handleScale: { axisPressedMouseMove: true },
+        handleScroll: { mouseWheel: true, pressedMouseMove: true },
+      });
+
+      chartInstance = chart;
+
+      const candleSeries = chart.addCandlestickSeries({
+        upColor: '#48bb78',
+        downColor: '#fc8181',
+        borderUpColor: '#48bb78',
+        borderDownColor: '#fc8181',
+        wickUpColor: 'rgba(72,187,120,0.5)',
+        wickDownColor: 'rgba(252,129,129,0.5)',
+      });
+
+      const candleData = bars.map(b => ({
+        time: Math.floor(new Date(b.bar_time).getTime() / 1000),
+        open: Number(b.open),
+        high: Number(b.high),
+        low: Number(b.low),
+        close: Number(b.close),
+      }));
+
+      candleSeries.setData(candleData);
+
+      // Add volume histogram
+      const volumeSeries = chart.addHistogramSeries({
+        priceFormat: { type: 'volume' },
+        priceScaleId: 'volume',
+      });
+
+      chart.priceScale('volume').applyOptions({
+        scaleMargins: { top: 0.85, bottom: 0 },
+      });
+
+      const volData = bars.map(b => ({
+        time: Math.floor(new Date(b.bar_time).getTime() / 1000),
+        value: Number(b.volume),
+        color: Number(b.close) >= Number(b.open)
+          ? 'rgba(72,187,120,0.25)'
+          : 'rgba(252,129,129,0.25)',
+      }));
+
+      volumeSeries.setData(volData);
+
+      // Add GEX Flip price line
+      if (state.exposure?.gexFlipPrice) {
+        candleSeries.createPriceLine({
+          price: state.exposure.gexFlipPrice,
+          color: '#b794f4',
+          lineWidth: 1,
+          lineStyle: 2,
+          title: `GEX Flip ${fmt(state.exposure.gexFlipPrice, 0)}`,
+          axisLabelVisible: true,
+        });
+      }
+
+      // Add Max Pain line
+      const oi = state.oiSummary?.summaries?.[0];
+      if (oi?.max_pain_strike) {
+        candleSeries.createPriceLine({
+          price: Number(oi.max_pain_strike),
+          color: '#fbd38d',
+          lineWidth: 1,
+          lineStyle: 2,
+          title: `MaxPain ${fmt(Number(oi.max_pain_strike), 0)}`,
+          axisLabelVisible: true,
+        });
+      }
+
+      // Add Put/Call wall lines
+      if (oi?.max_call_oi_strike) {
+        candleSeries.createPriceLine({
+          price: Number(oi.max_call_oi_strike),
+          color: 'rgba(72,187,120,0.5)',
+          lineWidth: 1,
+          lineStyle: 3,
+          title: `Call Wall`,
+          axisLabelVisible: true,
+        });
+      }
+      if (oi?.max_put_oi_strike) {
+        candleSeries.createPriceLine({
+          price: Number(oi.max_put_oi_strike),
+          color: 'rgba(252,129,129,0.5)',
+          lineWidth: 1,
+          lineStyle: 3,
+          title: `Put Wall`,
+          axisLabelVisible: true,
+        });
+      }
+
+      chart.timeScale().fitContent();
+    }
+
+    // ===================================================================
+    // Exposure Table
+    // ===================================================================
+    function renderExposureTable() {
+      const container = document.getElementById('exposureTableContainer');
+      const byStrike = state.exposure?.byStrike || [];
+
+      if (byStrike.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state__icon">📋</div>No exposure data</div>';
+        return;
+      }
+
+      // Sort by absolute net GEX descending, take top 25
+      const top = [...byStrike]
+        .sort((a, b) => Math.abs(b.netGex) - Math.abs(a.netGex))
+        .slice(0, 25)
+        .sort((a, b) => a.strike - b.strike);
+
+      let html = `
+        <table class="exposure-table">
+          <thead>
+            <tr>
+              <th>Strike</th>
+              <th>Net GEX</th>
+              <th>Call GEX</th>
+              <th>Put GEX</th>
+              <th>Net DEX</th>
+              <th>Net Vanna</th>
+              <th>Net Charm</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const s of top) {
+        const spot = state.exposure?.spotPrice || 0;
+        const isNearSpot = Math.abs(s.strike - spot) < spot * 0.002;
+        const rowStyle = isNearSpot ? 'background:rgba(99,179,237,0.05)' : '';
+
+        html += `<tr style="${rowStyle}">`;
+        html += `<td style="${isNearSpot ? 'color:var(--accent-yellow);font-weight:700' : ''}">${fmt(s.strike, 0)}</td>`;
+        html += `<td class="${valClass(s.netGex)}">${fmtCompact(s.netGex)}</td>`;
+        html += `<td class="val-positive">${fmtCompact(s.callGex)}</td>`;
+        html += `<td class="val-negative">${fmtCompact(s.putGex)}</td>`;
+        html += `<td class="${valClass(s.netDex)}">${fmtCompact(s.netDex)}</td>`;
+        html += `<td class="${valClass(s.netVanna)}">${fmtCompact(s.netVanna)}</td>`;
+        html += `<td class="${valClass(s.netCharm)}">${fmtCompact(s.netCharm)}</td>`;
+        html += `</tr>`;
+      }
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+
+    // ===================================================================
+    // Backtests
+    // ===================================================================
+    function renderBacktests() {
+      const container = document.getElementById('backtestsContainer');
+      const runs = state.backtests;
+
+      if (!runs || runs.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state__icon">⚡</div>No backtest runs found</div>';
+        return;
+      }
+
+      document.getElementById('btBadge').textContent = `${runs.length} runs`;
+
+      let html = `
+        <table class="bt-table">
+          <thead>
+            <tr>
+              <th>Strategy</th>
+              <th>Symbol</th>
+              <th>Period</th>
+              <th>Trades</th>
+              <th>Win Rate</th>
+              <th>PnL</th>
+              <th>Max DD</th>
+              <th>Sharpe</th>
+              <th>Profit Factor</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const r of runs) {
+        const pnl = Number(r.final_capital) - Number(r.initial_capital);
+        const pnlPct = (pnl / Number(r.initial_capital) * 100);
+
+        html += `<tr>`;
+        html += `<td>${r.strategy_name}</td>`;
+        html += `<td>${r.symbol}</td>`;
+        html += `<td>${r.start_date} → ${r.end_date}</td>`;
+        html += `<td>${r.total_trades}</td>`;
+        html += `<td class="${Number(r.win_rate) >= 0.5 ? 'val-positive' : 'val-negative'}">${(Number(r.win_rate) * 100).toFixed(0)}%</td>`;
+        html += `<td class="${valClass(pnl)}">${fmtCompact(pnl)} (${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%)</td>`;
+        html += `<td class="val-negative">${(Number(r.max_drawdown) * 100).toFixed(2)}%</td>`;
+        html += `<td>${r.sharpe_ratio != null ? Number(r.sharpe_ratio).toFixed(2) : '—'}</td>`;
+        html += `<td>${r.profit_factor != null ? Number(r.profit_factor).toFixed(2) : '—'}</td>`;
+        html += `</tr>`;
+      }
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+
+    // ===================================================================
+    // Event Listeners
+    // ===================================================================
+    document.getElementById('symbolSelect').addEventListener('change', (e) => {
+      state.symbol = e.target.value;
+      loadAll();
+    });
+
+    // Handle chart resize
+    window.addEventListener('resize', () => {
+      if (chartInstance) {
+        const container = document.getElementById('priceChartContainer');
+        chartInstance.applyOptions({
+          width: container.clientWidth,
+          height: container.clientHeight,
+        });
+      }
+    });
+
+    // ===================================================================
+    // Init
+    // ===================================================================
+    loadAll();
+
+    // Auto-refresh every 60 seconds
+    setInterval(loadAll, 60000);
+  </script>
+</body>
+</html>
