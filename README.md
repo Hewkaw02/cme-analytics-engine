@@ -26,6 +26,33 @@ graph TD
     Sc -.-> N[Notifications]
 ```
 
+## 📂 Project Structure
+
+```text
+cme-analytics-engine/
+├── config/                  # Server configuration templates
+├── dashboard/               # Dashboard frontend and web server
+├── src/                     # Main TypeScript source code
+│   ├── __tests__/           # Unit and integration test suites
+│   ├── analytics/           # Financial analytics (Black76, GEX, MaxPain, IVRank, Indicators, VolatilitySurface)
+│   ├── backtest/            # Backtesting engine and trading strategies
+│   ├── browser/             # Stealth browser pooling and proxy interceptors
+│   ├── config/              # Environment configurations and trading symbols
+│   ├── db/                  # Database clients, repositories, and TimescaleDB migrations
+│   ├── exporters/           # CSV and summary data exporters
+│   ├── notifications/       # Slack and Line notification handlers
+│   ├── parsers/             # Data validation and parsing logic
+│   ├── scrapers/            # Web scraping modules (Option chains, Settlement, Open Interest)
+│   ├── utils/               # Common helper utilities (Logger, CircuitBreakers, HolidayCalendars)
+│   ├── main.ts              # Entrypoint script
+│   ├── orchestrator.ts      # Main pipeline execution orchestrator
+│   ├── scheduler.ts         # Intraday and daily job scheduler
+│   └── types.ts             # Shared TypeScript type declarations
+├── scripts/                 # Utility scripts for data backfill and analysis recomputation
+├── Dockerfile               # Containerization configuration
+└── docker-compose.yml       # Docker environment configuration with TimescaleDB
+```
+
 ## 🛠 Setup
 
 ### Prerequisites
