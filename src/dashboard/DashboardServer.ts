@@ -8,13 +8,36 @@ import { logger } from '../utils/logger.js';
 import { calculateDealerExposures } from '../analytics/ExposureEngine.js';
 import { calculateVolumeProfile } from '../analytics/VolumeProfile.js';
 import { classifyMarketRegime, type MarketRegimeInput } from '../analytics/MarketRegime.js';
-import type { OptionRecord, IntradayBar, OISummaryRecord } from '../types.js';
+import type { OptionRecord, IntradayBar, OISummaryRecord, SessionConfig } from '../types.js';
+import { BrowserPool } from '../browser/BrowserPool.js';
+import { Orchestrator } from '../orchestrator.js';
+import { env } from '../config/env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Initialize BrowserPool and Orchestrator for the API Pipeline
+const sessionConfig: SessionConfig = {
+  headless: env.HEADLESS,
+  proxy: env.PROXY_URL,
+  userAgent: env.USER_AGENT || 'random',
+  stealth: true,
+  viewport: { width: 1920, height: 1080 },
+  timeout: 30_000,
+  cookiePersist: false,
+};
+
+const pool = new BrowserPool(sessionConfig, {
+  maxInstances: env.MAX_BROWSER_INSTANCES,
+});
+
+const orchestrator = new Orchestrator(pool);
+
 const app = express();
 const PORT = parseInt(process.env.DASHBOARD_PORT || '3000', 10);
+
+// --- JSON Body Parser ---
+app.use(express.json());
 
 // --- Static files ---
 app.use(express.static(path.join(__dirname, 'public')));
@@ -422,6 +445,58 @@ app.get('/api/vol2vol/:symbol', async (req, res) => {
   }
 });
 
+// --- Pipeline Runner API ---
+
+/**
+ * POST /api/pipeline/run
+ * Trigger a specific pipeline scraper & analyzer job.
+ * Body: { jobType: string, symbol?: string, date?: string, timeframe?: string }
+ */
+app.post('/api/pipeline/run', async (req, res) => {
+  try {
+    const { jobType, symbol, date, timeframe } = req.body;
+    if (!jobType) {
+      return res.status(400).json({ error: 'jobType is required (OPTIONS, OI, INTRADAY, SETTLEMENT, BULLETIN, ANALYSIS)' });
+    }
+
+    const tradeDate = date || new Date().toISOString().split('T')[0];
+    logger.info(`POST /api/pipeline/run - Triggered: ${jobType} for ${symbol || 'ALL'} on ${tradeDate}`);
+
+    const result = await orchestrator.runJob(jobType as any, tradeDate, symbol, timeframe);
+    res.json({ message: 'Pipeline job executed successfully', result });
+  } catch (err) {
+    logger.error('POST /api/pipeline/run failed', { error: (err as Error).message });
+    res.status(500).json({ error: 'Failed to run pipeline job', details: (err as Error).message });
+  }
+});
+
+/**
+ * GET /api/pipeline/run
+ * Conveniency GET endpoint to trigger a scraper & analyzer job.
+ * Query params: ?jobType=OPTIONS&symbol=ES&date=2026-06-05&timeframe=1m
+ */
+app.get('/api/pipeline/run', async (req, res) => {
+  try {
+    const jobType = req.query.jobType as string;
+    const symbol = req.query.symbol as string;
+    const date = req.query.date as string;
+    const timeframe = req.query.timeframe as string;
+
+    if (!jobType) {
+      return res.status(400).json({ error: 'jobType query param is required (OPTIONS, OI, INTRADAY, SETTLEMENT, BULLETIN, ANALYSIS)' });
+    }
+
+    const tradeDate = date || new Date().toISOString().split('T')[0];
+    logger.info(`GET /api/pipeline/run - Triggered: ${jobType} for ${symbol || 'ALL'} on ${tradeDate}`);
+
+    const result = await orchestrator.runJob(jobType as any, tradeDate, symbol, timeframe);
+    res.json({ message: 'Pipeline job executed successfully', result });
+  } catch (err) {
+    logger.error('GET /api/pipeline/run failed', { error: (err as Error).message });
+    res.status(500).json({ error: 'Failed to run pipeline job', details: (err as Error).message });
+  }
+});
+
 // --- Health check ---
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', uptime: process.uptime() });
@@ -441,12 +516,14 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   server.close();
+  await orchestrator.shutdown();
   await closePool();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   server.close();
+  await orchestrator.shutdown();
   await closePool();
   process.exit(0);
 });
