@@ -12,6 +12,8 @@ import type { OptionRecord, IntradayBar, OISummaryRecord, SessionConfig } from '
 import { BrowserPool } from '../browser/BrowserPool.js';
 import { Orchestrator } from '../orchestrator.js';
 import { env } from '../config/env.js';
+import { BacktestEngine } from '../backtest/BacktestEngine.js';
+import { GEXReversalStrategy } from '../backtest/strategies/GEXReversalStrategy.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +36,7 @@ const pool = new BrowserPool(sessionConfig, {
 const orchestrator = new Orchestrator(pool);
 
 const app = express();
-const PORT = parseInt(process.env.DASHBOARD_PORT || '3000', 10);
+const PORT = parseInt(process.env.DASHBOARD_PORT || '3001', 10);
 
 // --- JSON Body Parser ---
 app.use(express.json());
@@ -48,6 +50,220 @@ app.use((_req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
+
+// =====================================================================
+// Vol2Vol Fallback Helpers
+// =====================================================================
+
+/**
+ * Loads latest Vol2Vol data from output JSON.
+ */
+function loadVol2VolFallback(symbol: string): any {
+  try {
+    const vol2volPath = path.resolve(process.cwd(), 'output/vol2vol/vol2vol_summary_latest.json');
+    if (!fs.existsSync(vol2volPath)) {
+      logger.warn(`Vol2Vol fallback file not found at ${vol2volPath}`);
+      return null;
+    }
+    const rawData = fs.readFileSync(vol2volPath, 'utf8');
+    const parsed = JSON.parse(rawData);
+    
+    const symbolData = parsed.data?.[symbol.toUpperCase()];
+    if (!symbolData) {
+      logger.warn(`No Vol2Vol fallback data found for symbol ${symbol}`);
+      return null;
+    }
+    
+    return {
+      fetchDate: parsed.fetchDate,
+      ...symbolData,
+    };
+  } catch (err) {
+    logger.error(`Error loading Vol2Vol fallback for ${symbol}`, { error: (err as Error).message });
+    return null;
+  }
+}
+
+/**
+ * Calculates Max Pain from strikeData using call/put volumes as proxy for OI.
+ */
+function calculateMaxPainFallback(strikeData: any[]): number {
+  let minPain = Infinity;
+  let maxPainStrike = 0;
+  
+  for (const test of strikeData) {
+    let pain = 0;
+    for (const s of strikeData) {
+      const callsVal = (s.callVolume || 0) * Math.max(0, test.strike - s.strike);
+      const putsVal = (s.putVolume || 0) * Math.max(0, s.strike - test.strike);
+      pain += (callsVal + putsVal);
+    }
+    if (pain < minPain) {
+      minPain = pain;
+      maxPainStrike = test.strike;
+    }
+  }
+  return maxPainStrike;
+}
+
+/**
+ * Synthesizes OptionRecords and calculates exposures from Vol2Vol data.
+ */
+function getFallbackExposures(symbol: string, vol2volData: any) {
+  const spotPrice = vol2volData.futurePrice || 0;
+  const dte = vol2volData.dte || 0;
+  const tradeDate = vol2volData.fetchDate ? vol2volData.fetchDate.split('T')[0] : new Date().toISOString().split('T')[0];
+  
+  const options: OptionRecord[] = [];
+  
+  for (const s of vol2volData.strikeData || []) {
+    // Call record
+    options.push({
+      trade_date: tradeDate,
+      fetched_at: vol2volData.fetchDate || new Date().toISOString(),
+      symbol: symbol.toUpperCase(),
+      expiry_code: 'V2V_FALLBACK',
+      expiry_date: tradeDate,
+      days_to_expiry: Math.max(1, Math.round(dte)),
+      strike: s.strike,
+      option_type: 'C',
+      last_price: null,
+      settle_price: null,
+      bid: null,
+      ask: null,
+      bid_size: null,
+      ask_size: null,
+      volume: s.callVolume || 0,
+      open_interest: s.callVolume || 0, // proxy OI with volume
+      oi_change: 0,
+      high: null,
+      low: null,
+      open: null,
+      delta: null,
+      gamma: null,
+      theta: null,
+      vega: null,
+      rho: null,
+      implied_vol: s.impliedVol || vol2volData.atmVolatility || 0.1,
+      theoretical_value: null,
+      underlying_price: spotPrice,
+      intrinsic_value: null,
+      time_value: null,
+      moneyness: null,
+    });
+    
+    // Put record
+    options.push({
+      trade_date: tradeDate,
+      fetched_at: vol2volData.fetchDate || new Date().toISOString(),
+      symbol: symbol.toUpperCase(),
+      expiry_code: 'V2V_FALLBACK',
+      expiry_date: tradeDate,
+      days_to_expiry: Math.max(1, Math.round(dte)),
+      strike: s.strike,
+      option_type: 'P',
+      last_price: null,
+      settle_price: null,
+      bid: null,
+      ask: null,
+      bid_size: null,
+      ask_size: null,
+      volume: s.putVolume || 0,
+      open_interest: s.putVolume || 0, // proxy OI with volume
+      oi_change: 0,
+      high: null,
+      low: null,
+      open: null,
+      delta: null,
+      gamma: null,
+      theta: null,
+      vega: null,
+      rho: null,
+      implied_vol: s.impliedVol || vol2volData.atmVolatility || 0.1,
+      theoretical_value: null,
+      underlying_price: spotPrice,
+      intrinsic_value: null,
+      time_value: null,
+      moneyness: null,
+    });
+  }
+  
+  const exposures = calculateDealerExposures(options, spotPrice, 0.05, true);
+  
+  return {
+    tradeDate,
+    spotPrice,
+    ...exposures,
+    byStrike: exposures.byStrike.filter(s =>
+      s.strike >= spotPrice * 0.85 && s.strike <= spotPrice * 1.15
+    ),
+  };
+}
+
+/**
+ * Synthesizes OISummaryRecord from Vol2Vol data.
+ */
+function getFallbackOiSummary(symbol: string, vol2volData: any, computedExposures: any) {
+  const spotPrice = vol2volData.futurePrice || 0;
+  const dte = vol2volData.dte || 0;
+  const tradeDate = vol2volData.fetchDate ? vol2volData.fetchDate.split('T')[0] : new Date().toISOString().split('T')[0];
+  
+  let totalCallVolume = 0;
+  let totalPutVolume = 0;
+  let maxCallVol = -1;
+  let maxCallStrike = spotPrice;
+  let maxPutVol = -1;
+  let maxPutStrike = spotPrice;
+  
+  for (const s of vol2volData.strikeData || []) {
+    totalCallVolume += (s.callVolume || 0);
+    totalPutVolume += (s.putVolume || 0);
+    
+    if ((s.callVolume || 0) > maxCallVol) {
+      maxCallVol = s.callVolume;
+      maxCallStrike = s.strike;
+    }
+    if ((s.putVolume || 0) > maxPutVol) {
+      maxPutVol = s.putVolume;
+      maxPutStrike = s.strike;
+    }
+  }
+  
+  const maxPainStrike = calculateMaxPainFallback(vol2volData.strikeData || []);
+  const putCallRatio = totalCallVolume > 0 ? totalPutVolume / totalCallVolume : 1;
+  
+  const summary: OISummaryRecord = {
+    trade_date: tradeDate,
+    symbol: symbol.toUpperCase(),
+    expiry_code: 'V2V_FALLBACK',
+    expiry_date: tradeDate,
+    days_to_expiry: Math.max(1, Math.round(dte)),
+    underlying_price: spotPrice,
+    total_call_oi: totalCallVolume,
+    total_put_oi: totalPutVolume,
+    total_call_volume: totalCallVolume,
+    total_put_volume: totalPutVolume,
+    put_call_oi_ratio: putCallRatio,
+    put_call_vol_ratio: putCallRatio,
+    max_call_oi_strike: maxCallStrike,
+    max_put_oi_strike: maxPutStrike,
+    max_pain_strike: maxPainStrike,
+    max_call_oi_value: maxCallVol,
+    max_put_oi_value: maxPutVol,
+    net_gamma_exposure: computedExposures.netGex || 0,
+    gex_flip_level: computedExposures.gexFlipPrice || null,
+    atm_iv_call: vol2volData.atmVolatility || null,
+    atm_iv_put: vol2volData.atmVolatility || null,
+    atm_iv_skew: 0,
+    iv_rank: 50,
+    iv_percentile: 50,
+  };
+  
+  return {
+    tradeDate,
+    summaries: [summary],
+  };
+}
 
 // =====================================================================
 // API Routes
@@ -64,10 +280,14 @@ app.get('/api/symbols', async (_req, res) => {
       .select('symbol')
       .distinct()
       .execute();
-    res.json(rows.map(r => r.symbol));
+    
+    // Always include the core Vol2Vol symbols ES, NQ, GC, ZS as baseline
+    const symbols = Array.from(new Set([...rows.map(r => r.symbol), 'ES', 'NQ', 'GC', 'ZS']));
+    res.json(symbols);
   } catch (err) {
     logger.error('GET /api/symbols failed', { error: (err as Error).message });
-    res.status(500).json({ error: 'Failed to fetch symbols' });
+    // In case of complete DB failure, fall back to default symbols
+    res.json(['ES', 'NQ', 'GC', 'ZS']);
   }
 });
 
@@ -88,19 +308,32 @@ app.get('/api/exposure/:symbol', async (req, res) => {
       .limit(1)
       .executeTakeFirst();
 
-    if (!latestDate) {
-      return res.json({ error: 'No data', netGex: 0, netDex: 0, byStrike: [] });
+    let options: any[] = [];
+    if (latestDate) {
+      options = await db
+        .selectFrom('options_chain')
+        .selectAll()
+        .where('symbol', '=', symbol)
+        .where('trade_date', '=', latestDate.trade_date)
+        .execute();
     }
 
-    const options = await db
-      .selectFrom('options_chain')
-      .selectAll()
-      .where('symbol', '=', symbol)
-      .where('trade_date', '=', latestDate.trade_date)
-      .execute();
+    // Check if options are empty or have completely null/zero Greeks/OI
+    const isEmptyOrInvalid = 
+      options.length === 0 || 
+      options.every(o => !o.open_interest || o.open_interest === 0) ||
+      options.every(o => o.implied_vol === null || o.implied_vol === 0);
 
-    if (options.length === 0) {
-      return res.json({ error: 'No options', netGex: 0, netDex: 0, byStrike: [] });
+    if (isEmptyOrInvalid) {
+      logger.info(`Database options data for ${symbol} is empty, zeroed, or missing Greeks. Triggering Vol2Vol fallback.`);
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData) {
+        const fallback = getFallbackExposures(symbol, vol2volData);
+        return res.json(fallback);
+      }
+      if (options.length === 0) {
+        return res.json({ error: 'No options', netGex: 0, netDex: 0, byStrike: [] });
+      }
     }
 
     // Get spot price from the first option with underlying_price
@@ -109,7 +342,7 @@ app.get('/api/exposure/:symbol', async (req, res) => {
     const exposures = calculateDealerExposures(options as OptionRecord[], Number(spotPrice));
 
     res.json({
-      tradeDate: latestDate.trade_date,
+      tradeDate: latestDate!.trade_date,
       spotPrice: Number(spotPrice),
       ...exposures,
       // Limit byStrike to ±15% of spot to keep payload manageable
@@ -119,6 +352,15 @@ app.get('/api/exposure/:symbol', async (req, res) => {
     });
   } catch (err) {
     logger.error('GET /api/exposure failed', { error: (err as Error).message });
+    // Attempt fallback in case of DB error
+    try {
+      const { symbol } = req.params;
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData) {
+        const fallback = getFallbackExposures(symbol, vol2volData);
+        return res.json(fallback);
+      }
+    } catch (_) {}
     res.status(500).json({ error: 'Failed to calculate exposures' });
   }
 });
@@ -139,23 +381,47 @@ app.get('/api/oi-summary/:symbol', async (req, res) => {
       .limit(1)
       .executeTakeFirst();
 
-    if (!latestDate) {
-      return res.json([]);
+    let rows: any[] = [];
+    if (latestDate) {
+      rows = await db
+        .selectFrom('oi_expiry_summary')
+        .selectAll()
+        .where('symbol', '=', symbol)
+        .where('trade_date', '=', latestDate.trade_date)
+        .execute();
     }
 
-    const rows = await db
-      .selectFrom('oi_expiry_summary')
-      .selectAll()
-      .where('symbol', '=', symbol)
-      .where('trade_date', '=', latestDate.trade_date)
-      .execute();
+    const isEmptyOrInvalid = 
+      rows.length === 0 || 
+      rows.every(r => Number(r.total_call_oi) === 0 && Number(r.total_put_oi) === 0) ||
+      rows.every(r => r.underlying_price === null);
+
+    if (isEmptyOrInvalid) {
+      logger.info(`Database OI summary data for ${symbol} is empty, zeroed, or has null underlying. Triggering Vol2Vol fallback.`);
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData) {
+        const fallbackExposures = getFallbackExposures(symbol, vol2volData);
+        const fallbackOiSummary = getFallbackOiSummary(symbol, vol2volData, fallbackExposures);
+        return res.json(fallbackOiSummary);
+      }
+    }
 
     res.json({
-      tradeDate: latestDate.trade_date,
+      tradeDate: latestDate!.trade_date,
       summaries: rows,
     });
   } catch (err) {
     logger.error('GET /api/oi-summary failed', { error: (err as Error).message });
+    // Attempt fallback in case of DB error
+    try {
+      const { symbol } = req.params;
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData) {
+        const fallbackExposures = getFallbackExposures(symbol, vol2volData);
+        const fallbackOiSummary = getFallbackOiSummary(symbol, vol2volData, fallbackExposures);
+        return res.json(fallbackOiSummary);
+      }
+    } catch (_) {}
     res.status(500).json({ error: 'Failed to fetch OI summary' });
   }
 });
@@ -223,10 +489,6 @@ app.get('/api/regime/:symbol', async (req, res) => {
       .limit(1)
       .executeTakeFirst();
 
-    if (!summary) {
-      return res.json({ error: 'No OI summary data' });
-    }
-
     // Get latest intraday bar for VWAP/bands
     const latestBar = await db
       .selectFrom('intraday_bars')
@@ -237,33 +499,116 @@ app.get('/api/regime/:symbol', async (req, res) => {
       .limit(1)
       .executeTakeFirst();
 
-    const spotPrice = Number(summary.underlying_price) || Number(latestBar?.close) || 0;
+    // Check if summary is missing, zeroed, or has null underlying_price
+    const isSummaryEmptyOrInvalid =
+      !summary ||
+      Number(summary.total_call_oi) === 0 ||
+      summary.underlying_price === null;
+
+    let spotPrice = 0;
+    let netGex = 0;
+    let gexFlipPrice: number | null = null;
+    let putCallOIRatio = 0;
+    let maxCallOIStrike = 0;
+    let maxPutOIStrike = 0;
+    let maxPainStrike = 0;
+    let ivRank = 50;
+    let ivPercentile = 50;
+    let sd1Upper: number | null = null;
+    let sd1Lower: number | null = null;
+    let sd2Upper: number | null = null;
+    let sd2Lower: number | null = null;
+    let vwap: number | null = null;
+    let tradeDateStr = summary?.trade_date || new Date().toISOString();
+
+    if (isSummaryEmptyOrInvalid) {
+      logger.info(`Database summary data for regime classification of ${symbol} is missing or invalid. Triggering Vol2Vol fallback.`);
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData) {
+        const fallbackExposures = getFallbackExposures(symbol, vol2volData);
+        const fallbackOiSummary = getFallbackOiSummary(symbol, vol2volData, fallbackExposures);
+        const fSummary = fallbackOiSummary.summaries[0];
+        
+        spotPrice = fallbackExposures.spotPrice;
+        netGex = fallbackExposures.netGex;
+        gexFlipPrice = fallbackExposures.gexFlipPrice;
+        putCallOIRatio = Number(fSummary.put_call_oi_ratio) || 0;
+        maxCallOIStrike = Number(fSummary.max_call_oi_strike) || 0;
+        maxPutOIStrike = Number(fSummary.max_put_oi_strike) || 0;
+        maxPainStrike = Number(fSummary.max_pain_strike) || 0;
+        ivRank = fSummary.iv_rank !== null ? Number(fSummary.iv_rank) : 50;
+        ivPercentile = fSummary.iv_percentile !== null ? Number(fSummary.iv_percentile) : 50;
+        tradeDateStr = fallbackOiSummary.tradeDate;
+
+        // Map SD bands from vol2volData standardDeviations
+        const sd1 = vol2volData.standardDeviations?.find((d: any) => d.sd === 1);
+        if (sd1) {
+          sd1Upper = sd1.upside.strikeEnd;
+          sd1Lower = sd1.downside.strikeStart;
+        }
+        const sd2 = vol2volData.standardDeviations?.find((d: any) => d.sd === 2);
+        if (sd2) {
+          sd2Upper = sd2.upside.strikeEnd;
+          sd2Lower = sd2.downside.strikeStart;
+        }
+        vwap = spotPrice; // Fallback VWAP to spot price if not in DB
+      } else {
+        // Absolute fallback if no JSON either
+        spotPrice = Number(summary?.underlying_price) || Number(latestBar?.close) || 0;
+        netGex = Number(summary?.net_gamma_exposure) || 0;
+        gexFlipPrice = summary?.gex_flip_level ? Number(summary.gex_flip_level) : null;
+        putCallOIRatio = Number(summary?.put_call_oi_ratio) || 0;
+        maxCallOIStrike = Number(summary?.max_call_oi_strike) || 0;
+        maxPutOIStrike = Number(summary?.max_put_oi_strike) || 0;
+        maxPainStrike = Number(summary?.max_pain_strike) || 0;
+        ivRank = summary?.iv_rank ? Number(summary.iv_rank) : 50;
+        ivPercentile = summary?.iv_percentile ? Number(summary.iv_percentile) : 50;
+      }
+    } else {
+      // Use DB data
+      spotPrice = Number(summary.underlying_price);
+      netGex = Number(summary.net_gamma_exposure) || 0;
+      gexFlipPrice = summary.gex_flip_level ? Number(summary.gex_flip_level) : null;
+      putCallOIRatio = Number(summary.put_call_oi_ratio) || 0;
+      maxCallOIStrike = Number(summary.max_call_oi_strike) || 0;
+      maxPutOIStrike = Number(summary.max_put_oi_strike) || 0;
+      maxPainStrike = Number(summary.max_pain_strike) || 0;
+      ivRank = summary.iv_rank ? Number(summary.iv_rank) : 50;
+      ivPercentile = summary.iv_percentile ? Number(summary.iv_percentile) : 50;
+    }
+
+    // Still try to overlay DB intraday bar values for VWAP/bands if they are missing from fallback/DB summary
+    if (vwap === null) vwap = latestBar?.vwap_session ? Number(latestBar.vwap_session) : null;
+    if (sd1Upper === null) sd1Upper = latestBar?.vwap_sd1_upper ? Number(latestBar.vwap_sd1_upper) : null;
+    if (sd1Lower === null) sd1Lower = latestBar?.vwap_sd1_lower ? Number(latestBar.vwap_sd1_lower) : null;
+    if (sd2Upper === null) sd2Upper = latestBar?.vwap_sd2_upper ? Number(latestBar.vwap_sd2_upper) : null;
+    if (sd2Lower === null) sd2Lower = latestBar?.vwap_sd2_lower ? Number(latestBar.vwap_sd2_lower) : null;
 
     const input: MarketRegimeInput = {
       symbol,
       spotPrice,
-      netGex: Number(summary.net_gamma_exposure) || 0,
-      gexFlipPrice: summary.gex_flip_level ? Number(summary.gex_flip_level) : null,
-      vwap: latestBar?.vwap_session ? Number(latestBar.vwap_session) : null,
-      sd1Upper: latestBar?.vwap_sd1_upper ? Number(latestBar.vwap_sd1_upper) : null,
-      sd1Lower: latestBar?.vwap_sd1_lower ? Number(latestBar.vwap_sd1_lower) : null,
-      sd2Upper: latestBar?.vwap_sd2_upper ? Number(latestBar.vwap_sd2_upper) : null,
-      sd2Lower: latestBar?.vwap_sd2_lower ? Number(latestBar.vwap_sd2_lower) : null,
+      netGex,
+      gexFlipPrice,
+      vwap,
+      sd1Upper,
+      sd1Lower,
+      sd2Upper,
+      sd2Lower,
     };
 
     const regime = classifyMarketRegime(input);
 
     res.json({
-      tradeDate: summary.trade_date,
+      tradeDate: tradeDateStr,
       spotPrice,
       ...regime,
       oiSummary: {
-        putCallOIRatio: Number(summary.put_call_oi_ratio),
-        maxCallOIStrike: Number(summary.max_call_oi_strike),
-        maxPutOIStrike: Number(summary.max_put_oi_strike),
-        maxPainStrike: Number(summary.max_pain_strike),
-        ivRank: summary.iv_rank ? Number(summary.iv_rank) : null,
-        ivPercentile: summary.iv_percentile ? Number(summary.iv_percentile) : null,
+        putCallOIRatio,
+        maxCallOIStrike,
+        maxPutOIStrike,
+        maxPainStrike,
+        ivRank,
+        ivPercentile,
       },
     });
   } catch (err) {
@@ -324,6 +669,37 @@ app.get('/api/backtests', async (req, res) => {
   } catch (err) {
     logger.error('GET /api/backtests failed', { error: (err as Error).message });
     res.status(500).json({ error: 'Failed to fetch backtests' });
+  }
+});
+
+/**
+ * POST /api/backtests/run
+ * Runs a GEX Reversal strategy backtest simulation on-demand.
+ */
+app.post('/api/backtests/run', async (req, res) => {
+  try {
+    const { symbol, startDate, endDate, atrMultiplierStop, useMaxPainForTarget, minNetGex, initialCapital } = req.body;
+    
+    logger.info(`POST /api/backtests/run - Triggered backtest for ${symbol || 'ES'} (${startDate || '2026-05-12'} to ${endDate || '2026-05-25'})`);
+    
+    const strategy = new GEXReversalStrategy();
+    const result = await BacktestEngine.run(db, {
+      strategy,
+      strategyParams: {
+        atrMultiplierStop: atrMultiplierStop !== undefined ? Number(atrMultiplierStop) : 2.0,
+        useMaxPainForTarget: useMaxPainForTarget !== undefined ? Boolean(useMaxPainForTarget) : true,
+        minNetGex: minNetGex !== undefined ? Number(minNetGex) : 0,
+      },
+      symbol: symbol || 'ES',
+      startDate: startDate || '2026-05-12',
+      endDate: endDate || '2026-05-25',
+      initialCapital: initialCapital !== undefined ? Number(initialCapital) : 10000,
+    });
+    
+    res.json({ success: true, ...result });
+  } catch (err) {
+    logger.error('POST /api/backtests/run failed', { error: (err as Error).message });
+    res.status(500).json({ error: 'Failed to run backtest', details: (err as Error).message });
   }
 });
 
@@ -444,6 +820,77 @@ app.get('/api/vol2vol/:symbol', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch Vol2Vol data' });
   }
 });
+
+/**
+ * GET /api/vol2vol/:symbol/mt
+ * Returns CME Vol2Vol latest data in a flat plain text pipe-delimited format optimized for MT4/MT5.
+ */
+app.get('/api/vol2vol/:symbol/mt', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    
+    // 1. Try to fetch from database first
+    try {
+      const latestSnapshot = await db
+        .selectFrom('vol2vol_snapshots')
+        .selectAll()
+        .where('symbol', '=', symbol)
+        .orderBy('fetched_at', 'desc')
+        .limit(1)
+        .executeTakeFirst();
+
+      if (latestSnapshot) {
+        const dteVal = Number(latestSnapshot.dte).toFixed(2);
+        const ivVal = Number(latestSnapshot.atm_volatility).toFixed(4);
+        const expDate = latestSnapshot.expiry_date ? new Date(latestSnapshot.expiry_date).toISOString().split('T')[0] : '';
+        
+        // Format: Symbol|FuturePrice|DTE|ATM_IV|1SD_Low|1SD_High|2SD_Low|2SD_High|3SD_Low|3SD_High|ExpiryDate
+        const payload = `${latestSnapshot.symbol}|${Number(latestSnapshot.future_price).toFixed(2)}|${dteVal}|${ivVal}|${Number(latestSnapshot.sd1_down).toFixed(2)}|${Number(latestSnapshot.sd1_up).toFixed(2)}|${Number(latestSnapshot.sd2_down).toFixed(2)}|${Number(latestSnapshot.sd2_up).toFixed(2)}|${Number(latestSnapshot.sd3_down).toFixed(2)}|${Number(latestSnapshot.sd3_up).toFixed(2)}|${expDate}`;
+        
+        res.setHeader('Content-Type', 'text/plain');
+        return res.send(payload);
+      }
+    } catch (dbErr) {
+      logger.warn('Failed to fetch Vol2Vol MT data from DB, falling back to disk', { error: (dbErr as Error).message });
+    }
+
+    // 2. Fallback to reading JSON file
+    const vol2volPath = path.resolve(process.cwd(), 'output/vol2vol/vol2vol_summary_latest.json');
+    if (fs.existsSync(vol2volPath)) {
+      const rawData = fs.readFileSync(vol2volPath, 'utf8');
+      const data = JSON.parse(rawData);
+      const symbolData = data.data[symbol];
+      if (symbolData) {
+        const sd1 = symbolData.standardDeviations?.find((d: any) => d.sd === 1);
+        const sd2 = symbolData.standardDeviations?.find((d: any) => d.sd === 2);
+        const sd3 = symbolData.standardDeviations?.find((d: any) => d.sd === 3);
+
+        const sd1Down = sd1?.downside?.strikeStart || (symbolData.futurePrice * 0.99);
+        const sd1Up = sd1?.upside?.strikeEnd || (symbolData.futurePrice * 1.01);
+        const sd2Down = sd2?.downside?.strikeStart || (symbolData.futurePrice * 0.98);
+        const sd2Up = sd2?.upside?.strikeEnd || (symbolData.futurePrice * 1.02);
+        const sd3Down = sd3?.downside?.strikeStart || (symbolData.futurePrice * 0.97);
+        const sd3Up = sd3?.upside?.strikeEnd || (symbolData.futurePrice * 1.03);
+
+        // Estimate expiry date
+        const expDate = new Date();
+        expDate.setDate(expDate.getDate() + Math.ceil(symbolData.dte));
+        const expDateStr = expDate.toISOString().split('T')[0];
+
+        const payload = `${symbol}|${Number(symbolData.futurePrice).toFixed(2)}|${Number(symbolData.dte).toFixed(2)}|${Number(symbolData.atmVolatility).toFixed(4)}|${Number(sd1Down).toFixed(2)}|${Number(sd1Up).toFixed(2)}|${Number(sd2Down).toFixed(2)}|${Number(sd2Up).toFixed(2)}|${Number(sd3Down).toFixed(2)}|${Number(sd3Up).toFixed(2)}|${expDateStr}`;
+        
+        res.setHeader('Content-Type', 'text/plain');
+        return res.send(payload);
+      }
+    }
+
+    res.status(404).send('Error: CME Vol2Vol data not found.');
+  } catch (err) {
+    logger.error(`GET /api/vol2vol/${req.params.symbol}/mt failed`, { error: (err as Error).message });
+    res.status(500).send('Error: Failed to format Vol2Vol data.');
+  }
+});
+
 
 // --- Pipeline Runner API ---
 

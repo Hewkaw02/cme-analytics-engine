@@ -11,3 +11,5 @@ __pycache__/
 output_test/
 output_test_integration/
 .idea/
+config/cme-cookies.json
+scratch/
