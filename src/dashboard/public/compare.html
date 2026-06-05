@@ -105,6 +105,36 @@
       gap: var(--space-md);
     }
 
+    .header__nav {
+      display: flex;
+      gap: var(--space-md);
+      margin-left: var(--space-xl);
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link--active {
+      color: var(--accent-purple);
+      background: rgba(159, 122, 234, 0.1);
+      border: 1px solid rgba(159, 122, 234, 0.15);
+    }
+
     .header__logo {
       width: 36px;
       height: 36px;
@@ -565,6 +595,10 @@
         <h1 class="header__title">CME vs. ETF Arbitrage Terminal</h1>
         <p class="header__subtitle">Real-Time Volatility & Greeks Scaling Engine</p>
       </div>
+      <nav class="header__nav">
+        <a href="/index.html" class="nav-link">📊 Core Analytics</a>
+        <a href="/compare.html" class="nav-link nav-link--active">⚖️ Arbitrage Terminal</a>
+      </nav>
     </div>
     <div class="header__controls">
       <select id="pairSelect" class="pair-select">
