@@ -37,7 +37,7 @@ export async function computeOISummary(
       const firstOpt = groupOpts[0];
       const expiryDate = firstOpt.expiry_date || null;
       const daysToExpiry = firstOpt.days_to_expiry !== undefined ? firstOpt.days_to_expiry : null;
-      const underlyingPrice = firstOpt.underlying_price !== undefined ? firstOpt.underlying_price : null;
+      const underlyingPrice = firstOpt.underlying_price !== undefined && firstOpt.underlying_price !== null ? Number(firstOpt.underlying_price) : null;
 
       // 2. Aggregate Call/Put OI and volumes
       let totalCallOi = 0;
@@ -52,22 +52,23 @@ export async function computeOISummary(
       let maxPutOiValue = -1;
 
       for (const opt of groupOpts) {
-        const oi = opt.open_interest || 0;
-        const vol = opt.volume || 0;
+        const oi = Number(opt.open_interest || 0);
+        const vol = Number(opt.volume || 0);
+        const strikeVal = Number(opt.strike);
 
         if (opt.option_type === 'C') {
           totalCallOi += oi;
           totalCallVolume += vol;
           if (oi > maxCallOiValue) {
             maxCallOiValue = oi;
-            maxCallOiStrike = opt.strike;
+            maxCallOiStrike = strikeVal;
           }
         } else if (opt.option_type === 'P') {
           totalPutOi += oi;
           totalPutVolume += vol;
           if (oi > maxPutOiValue) {
             maxPutOiValue = oi;
-            maxPutOiStrike = opt.strike;
+            maxPutOiStrike = strikeVal;
           }
         }
       }
@@ -102,23 +103,24 @@ export async function computeOISummary(
 
       if (underlyingPrice !== null && groupOpts.length > 0) {
         // Find the strike closest to the underlying price
-        let closestStrike = groupOpts[0].strike;
+        let closestStrike = Number(groupOpts[0].strike);
         let minDiff = Math.abs(closestStrike - underlyingPrice);
 
         for (const opt of groupOpts) {
-          const diff = Math.abs(opt.strike - underlyingPrice);
+          const strikeVal = Number(opt.strike);
+          const diff = Math.abs(strikeVal - underlyingPrice);
           if (diff < minDiff) {
             minDiff = diff;
-            closestStrike = opt.strike;
+            closestStrike = strikeVal;
           }
         }
 
         // Get ATM options at this closest strike
-        const atmCall = groupOpts.find((o) => o.strike === closestStrike && o.option_type === 'C');
-        const atmPut = groupOpts.find((o) => o.strike === closestStrike && o.option_type === 'P');
+        const atmCall = groupOpts.find((o) => Number(o.strike) === closestStrike && o.option_type === 'C');
+        const atmPut = groupOpts.find((o) => Number(o.strike) === closestStrike && o.option_type === 'P');
 
-        atmIvCall = atmCall?.implied_vol !== undefined ? atmCall.implied_vol : null;
-        atmIvPut = atmPut?.implied_vol !== undefined ? atmPut.implied_vol : null;
+        atmIvCall = atmCall?.implied_vol !== undefined && atmCall.implied_vol !== null ? Number(atmCall.implied_vol) : null;
+        atmIvPut = atmPut?.implied_vol !== undefined && atmPut.implied_vol !== null ? Number(atmPut.implied_vol) : null;
 
         if (atmIvCall !== null && atmIvPut !== null) {
           atmIvSkew = atmIvCall - atmIvPut;

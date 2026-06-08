@@ -6,6 +6,7 @@ import { HolidayCalendar } from './utils/HolidayCalendar.js';
 import { logger } from './utils/logger.js';
 import { env } from './config/env.js';
 import { analysisConfig } from './config/analysis.js';
+import { humanDelay } from './utils/Delay.js';
 
 /**
  * Cron job definition per Spec §14.1.
@@ -61,6 +62,40 @@ function withHolidayGuard(
 //   cme_bulletin       0 18 * * 1-5                      18:00 CT
 //   retry              30 18 * * 1-5                     18:30 CT (retry all failed)
 const CRON_JOBS: CronJobDef[] = [
+  {
+    name: 'vol2vol_intraday',
+    expression: '*/15 17-23,0-16 * * 1-5',
+    description: 'Fetch CME Vol2Vol expected range data every 15 minutes during trading hours',
+    handler: async (orch, tradeDate) => {
+      logger.info('[Scheduler] Running vol2vol_intraday');
+      for (const symbol of ['ES', 'NQ', 'GC']) {
+        try {
+          await orch.runJob('VOL2VOL', tradeDate, symbol);
+          await humanDelay(2000, 5000);
+        } catch (err) {
+          logger.error(`[Scheduler] Failed vol2vol_intraday for ${symbol}`, { error: String(err) });
+        }
+      }
+    },
+  },
+  {
+    name: 'intraday_1m_es_nq',
+    expression: '*/5 17-23,0-15 * * 1-5',
+    description: 'Fetch ES/NQ 1-minute intraday bars every 5 minutes during trading hours',
+    handler: async (orch, tradeDate) => {
+      logger.info('[Scheduler] Running intraday_1m_es_nq');
+      await orch.runIntradayPipeline(tradeDate, '1m', ['ES', 'NQ']);
+    },
+  },
+  {
+    name: 'intraday_1m_gc',
+    expression: '*/5 17-23,0-15 * * 0-5',
+    description: 'Fetch GC 1-minute intraday bars every 5 minutes during trading hours (including Sunday)',
+    handler: async (orch, tradeDate) => {
+      logger.info('[Scheduler] Running intraday_1m_gc');
+      await orch.runIntradayPipeline(tradeDate, '1m', ['GC']);
+    },
+  },
   {
     name: 'analysis_hourly',
     expression: analysisConfig.cron,

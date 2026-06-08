@@ -53,9 +53,31 @@ If GEX or Max Pain logic changed, recompute historical summaries:
 npm run recompute -- --all
 ```
 
+## 📜 Deployment & Operations Updates
+
+### 1. Vol2Vol Cookie Expiry
+The Vol2Vol scraper requires active CME cookies stored at `config/cme-cookies.json` to access the QuikStrikeExpectedRange tool.
+- **Symptom**: Logs show `Could not find QuikStrike iframe. Cookie session might have expired.`
+- **Resolution**: Run the login helper locally to refresh session cookies:
+  ```bash
+  npm run script:cme-login
+  ```
+  This launches a visible browser. Fill in your credentials, solve the MFA challenge, wait for it to successfully save cookies to `config/cme-cookies.json`, then commit/deploy the refreshed cookies to the server.
+
+### 2. Dashboard Port (3002)
+- The Express dashboard backend server is configured to bind to port **3002** by default (override via `DASHBOARD_PORT` in `.env`).
+- Next.js frontend runs on port **3000** and proxies `/api/*` requests internally to port **3002**.
+- For production, both containers join the external `nginx-proxy` network, and Nginx Proxy Manager handles reverse proxying on ports 80/443 without exposing ports 3000/3002 to the host.
+
+### 3. Deployments
+- **Automated**: Pushing code to `main` or `develop` branches triggers GitHub Actions `.github/workflows/deploy.yml` which deploys directly to the server via SSH.
+- **Manual (One-Click)**: Run `.\deploy.ps1` inside Windows PowerShell to copy files via SCP and rebuild the containers on the droplet without pushing to Git.
+
 ## 📜 Deployment Checklist
-1. [ ] Configure production `.env`.
-2. [ ] Verify `DATABASE_URL` is secure.
-3. [ ] Test notification webhooks.
-4. [ ] Verify proxy throughput.
-5. [ ] Run `npm run test` on the target server.
+1. [ ] Configure production `.env` (ensure TimescaleDB uses port `5433` to prevent conflict with other databases).
+2. [ ] Ensure `config/cme-cookies.json` has an active session.
+3. [ ] Verify `DATABASE_URL` is secure.
+4. [ ] Test notification webhooks.
+5. [ ] Verify proxy throughput.
+6. [ ] Verify Nginx Proxy Manager configuration routing rules point to `cme-dashboard` on port 3000 and `cme-api` on port 3002.
+

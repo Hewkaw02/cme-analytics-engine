@@ -14,6 +14,10 @@ import { Orchestrator } from '../orchestrator.js';
 import { env } from '../config/env.js';
 import { BacktestEngine } from '../backtest/BacktestEngine.js';
 import { GEXReversalStrategy } from '../backtest/strategies/GEXReversalStrategy.js';
+import YahooFinance from 'yahoo-finance2';
+
+// @ts-ignore
+const yf = new (YahooFinance.default || YahooFinance)({ suppressNotices: ['yahooSurvey'] });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +40,7 @@ const pool = new BrowserPool(sessionConfig, {
 const orchestrator = new Orchestrator(pool);
 
 const app = express();
-const PORT = parseInt(process.env.DASHBOARD_PORT || '3001', 10);
+const PORT = parseInt(process.env.DASHBOARD_PORT || '3002', 10);
 
 // --- JSON Body Parser ---
 app.use(express.json());
@@ -265,6 +269,72 @@ function getFallbackOiSummary(symbol: string, vol2volData: any, computedExposure
   };
 }
 
+/**
+ * Synthesizes MarketRegimeResult from Vol2Vol data.
+ */
+function getFallbackRegime(symbol: string, vol2volData: any) {
+  const fallbackExposures = getFallbackExposures(symbol, vol2volData);
+  const fallbackOiSummary = getFallbackOiSummary(symbol, vol2volData, fallbackExposures);
+  const fSummary = fallbackOiSummary.summaries[0];
+  
+  const spotPrice = fallbackExposures.spotPrice;
+  const netGex = fallbackExposures.netGex;
+  const gexFlipPrice = fallbackExposures.gexFlipPrice;
+  const putCallOIRatio = Number(fSummary.put_call_oi_ratio) || 0;
+  const maxCallOIStrike = Number(fSummary.max_call_oi_strike) || 0;
+  const maxPutOIStrike = Number(fSummary.max_put_oi_strike) || 0;
+  const maxPainStrike = Number(fSummary.max_pain_strike) || 0;
+  const ivRank = fSummary.iv_rank !== null ? Number(fSummary.iv_rank) : 50;
+  const ivPercentile = fSummary.iv_percentile !== null ? Number(fSummary.iv_percentile) : 50;
+  const tradeDateStr = fallbackOiSummary.tradeDate;
+
+  // Map SD bands from vol2volData standardDeviations
+  let sd1Upper: number | null = null;
+  let sd1Lower: number | null = null;
+  let sd2Upper: number | null = null;
+  let sd2Lower: number | null = null;
+
+  const sd1 = vol2volData.standardDeviations?.find((d: any) => d.sd === 1);
+  if (sd1) {
+    sd1Upper = sd1.upside.strikeEnd;
+    sd1Lower = sd1.downside.strikeStart;
+  }
+  const sd2 = vol2volData.standardDeviations?.find((d: any) => d.sd === 2);
+  if (sd2) {
+    sd2Upper = sd2.upside.strikeEnd;
+    sd2Lower = sd2.downside.strikeStart;
+  }
+  const vwap = spotPrice; // Fallback VWAP to spot price if not in DB
+
+  const input: MarketRegimeInput = {
+    symbol,
+    spotPrice,
+    netGex,
+    gexFlipPrice,
+    vwap,
+    sd1Upper,
+    sd1Lower,
+    sd2Upper,
+    sd2Lower,
+  };
+
+  const regime = classifyMarketRegime(input);
+
+  return {
+    tradeDate: tradeDateStr,
+    spotPrice,
+    ...regime,
+    oiSummary: {
+      putCallOIRatio,
+      maxCallOIStrike,
+      maxPutOIStrike,
+      maxPainStrike,
+      ivRank,
+      ivPercentile,
+    },
+  };
+}
+
 // =====================================================================
 // API Routes
 // =====================================================================
@@ -321,8 +391,8 @@ app.get('/api/exposure/:symbol', async (req, res) => {
     // Check if options are empty or have completely null/zero Greeks/OI
     const isEmptyOrInvalid = 
       options.length === 0 || 
-      options.every(o => !o.open_interest || o.open_interest === 0) ||
-      options.every(o => o.implied_vol === null || o.implied_vol === 0);
+      options.every(o => !o.open_interest || Number(o.open_interest) === 0) ||
+      options.every(o => o.implied_vol === null || Number(o.implied_vol) === 0);
 
     if (isEmptyOrInvalid) {
       logger.info(`Database options data for ${symbol} is empty, zeroed, or missing Greeks. Triggering Vol2Vol fallback.`);
@@ -336,10 +406,30 @@ app.get('/api/exposure/:symbol', async (req, res) => {
       }
     }
 
-    // Get spot price from the first option with underlying_price
-    const spotPrice = options.find(o => o.underlying_price)?.underlying_price ?? 0;
+    // Get spot price from the first option with underlying_price, fallback to latest close or vol2vol summary
+    let spotPrice = Number(options.find(o => o.underlying_price && Number(o.underlying_price) > 0)?.underlying_price || 0);
+    
+    if (spotPrice === 0) {
+      const latestBar = await db
+        .selectFrom('intraday_bars')
+        .select('close')
+        .where('symbol', '=', symbol)
+        .orderBy('bar_time', 'desc')
+        .limit(1)
+        .executeTakeFirst();
+      if (latestBar && latestBar.close) {
+        spotPrice = Number(latestBar.close);
+      }
+    }
 
-    const exposures = calculateDealerExposures(options as OptionRecord[], Number(spotPrice));
+    if (spotPrice === 0) {
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData && vol2volData.futurePrice) {
+        spotPrice = Number(vol2volData.futurePrice);
+      }
+    }
+
+    const exposures = calculateDealerExposures(options as OptionRecord[], spotPrice);
 
     res.json({
       tradeDate: latestDate!.trade_date,
@@ -525,33 +615,8 @@ app.get('/api/regime/:symbol', async (req, res) => {
       logger.info(`Database summary data for regime classification of ${symbol} is missing or invalid. Triggering Vol2Vol fallback.`);
       const vol2volData = loadVol2VolFallback(symbol);
       if (vol2volData) {
-        const fallbackExposures = getFallbackExposures(symbol, vol2volData);
-        const fallbackOiSummary = getFallbackOiSummary(symbol, vol2volData, fallbackExposures);
-        const fSummary = fallbackOiSummary.summaries[0];
-        
-        spotPrice = fallbackExposures.spotPrice;
-        netGex = fallbackExposures.netGex;
-        gexFlipPrice = fallbackExposures.gexFlipPrice;
-        putCallOIRatio = Number(fSummary.put_call_oi_ratio) || 0;
-        maxCallOIStrike = Number(fSummary.max_call_oi_strike) || 0;
-        maxPutOIStrike = Number(fSummary.max_put_oi_strike) || 0;
-        maxPainStrike = Number(fSummary.max_pain_strike) || 0;
-        ivRank = fSummary.iv_rank !== null ? Number(fSummary.iv_rank) : 50;
-        ivPercentile = fSummary.iv_percentile !== null ? Number(fSummary.iv_percentile) : 50;
-        tradeDateStr = fallbackOiSummary.tradeDate;
-
-        // Map SD bands from vol2volData standardDeviations
-        const sd1 = vol2volData.standardDeviations?.find((d: any) => d.sd === 1);
-        if (sd1) {
-          sd1Upper = sd1.upside.strikeEnd;
-          sd1Lower = sd1.downside.strikeStart;
-        }
-        const sd2 = vol2volData.standardDeviations?.find((d: any) => d.sd === 2);
-        if (sd2) {
-          sd2Upper = sd2.upside.strikeEnd;
-          sd2Lower = sd2.downside.strikeStart;
-        }
-        vwap = spotPrice; // Fallback VWAP to spot price if not in DB
+        const fallbackRegime = getFallbackRegime(symbol, vol2volData);
+        return res.json(fallbackRegime);
       } else {
         // Absolute fallback if no JSON either
         spotPrice = Number(summary?.underlying_price) || Number(latestBar?.close) || 0;
@@ -612,7 +677,17 @@ app.get('/api/regime/:symbol', async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error('GET /api/regime failed', { error: (err as Error).message });
+    logger.error('GET /api/regime failed, attempting fallback', { error: (err as Error).message });
+    try {
+      const { symbol } = req.params;
+      const vol2volData = loadVol2VolFallback(symbol);
+      if (vol2volData) {
+        const fallbackRegime = getFallbackRegime(symbol, vol2volData);
+        return res.json(fallbackRegime);
+      }
+    } catch (fallbackErr) {
+      logger.error('Fallback regime failed', { error: (fallbackErr as Error).message, stack: (fallbackErr as Error).stack });
+    }
     res.status(500).json({ error: 'Failed to classify regime' });
   }
 });
@@ -628,7 +703,7 @@ app.get('/api/bars/:symbol', async (req, res) => {
     const timeframe = (req.query.timeframe as string) || '1m';
     const limit = Math.min(parseInt((req.query.limit as string) || '200', 10), 1000);
 
-    const bars = await db
+    let bars = await db
       .selectFrom('intraday_bars')
       .selectAll()
       .where('symbol', '=', symbol)
@@ -636,6 +711,25 @@ app.get('/api/bars/:symbol', async (req, res) => {
       .orderBy('bar_time', 'desc')
       .limit(limit)
       .execute();
+
+    // Timeframe fallback mechanism if requested is empty
+    if (bars.length === 0 && timeframe === '1m') {
+      const fallbacks = ['5m', '15m', '30m', '1h'];
+      for (const tf of fallbacks) {
+        bars = await db
+          .selectFrom('intraday_bars')
+          .selectAll()
+          .where('symbol', '=', symbol)
+          .where('timeframe', '=', tf)
+          .orderBy('bar_time', 'desc')
+          .limit(limit)
+          .execute();
+        if (bars.length > 0) {
+          logger.info(`No 1m bars found for ${symbol}. Falling back to ${tf} bars.`);
+          break;
+        }
+      }
+    }
 
     res.json(bars.reverse());
   } catch (err) {
@@ -678,10 +772,16 @@ app.get('/api/backtests', async (req, res) => {
  */
 app.post('/api/backtests/run', async (req, res) => {
   try {
-    const { symbol, startDate, endDate, atrMultiplierStop, useMaxPainForTarget, minNetGex, initialCapital } = req.body;
+    const { symbol, startDate, endDate, timeframe, atrMultiplierStop, useMaxPainForTarget, minNetGex, initialCapital } = req.body;
     
-    logger.info(`POST /api/backtests/run - Triggered backtest for ${symbol || 'ES'} (${startDate || '2026-05-12'} to ${endDate || '2026-05-25'})`);
+    const activeSymbol = symbol || 'ES';
+    logger.info(`POST /api/backtests/run - Triggered backtest for ${activeSymbol} (${startDate || '2026-05-12'} to ${endDate || '2026-05-25'})`);
     
+    let activeTimeframe = timeframe;
+    if (!activeTimeframe) {
+      activeTimeframe = activeSymbol === 'ES' ? '5m' : '1m';
+    }
+
     const strategy = new GEXReversalStrategy();
     const result = await BacktestEngine.run(db, {
       strategy,
@@ -690,9 +790,10 @@ app.post('/api/backtests/run', async (req, res) => {
         useMaxPainForTarget: useMaxPainForTarget !== undefined ? Boolean(useMaxPainForTarget) : true,
         minNetGex: minNetGex !== undefined ? Number(minNetGex) : 0,
       },
-      symbol: symbol || 'ES',
+      symbol: activeSymbol,
       startDate: startDate || '2026-05-12',
       endDate: endDate || '2026-05-25',
+      timeframe: activeTimeframe,
       initialCapital: initialCapital !== undefined ? Number(initialCapital) : 10000,
     });
     
@@ -761,15 +862,16 @@ app.get('/api/settlements/:symbol', async (req, res) => {
 app.get('/api/yahoo/options/:symbol', async (req, res) => {
   try {
     const { symbol } = req.params;
-    const response = await axios.get(`https://query1.finance.yahoo.com/v7/finance/options/${symbol}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    const result = await yf.options(symbol);
+    res.json({
+      optionChain: {
+        result: [result],
+        error: null
       }
     });
-    res.json(response.data);
   } catch (err) {
     logger.error(`GET /api/yahoo/options/${req.params.symbol} failed`, { error: (err as Error).message });
-    res.status(500).json({ error: `Failed to fetch options for ${req.params.symbol} from Yahoo Finance` });
+    res.status(500).json({ error: `Failed to fetch options for ${req.params.symbol} from Yahoo Finance: ${(err as Error).message}` });
   }
 });
 

@@ -1,0 +1,24 @@
+# ── CME Analytics Engine Droplet Deployment Override ─────────────────────────
+# Use this file alongside docker-compose.yml on the DigitalOcean Droplet
+# Usage: docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d --build
+
+services:
+
+  # ── Express API Server (NPM handles reverse proxy) ──────────────────────────
+  api:
+    ports: !reset [] 
+    networks:
+      - cme-net
+      - nginx-proxy
+
+  # ── Next.js Dashboard Frontend (NPM handles reverse proxy) ──────────────────
+  dashboard:
+    ports: !reset []
+    networks:
+      - cme-net
+      - nginx-proxy
+
+# ── Global Networks ───────────────────────────────────────────────────────────
+networks:
+  nginx-proxy:
+    external: true # Managed globally on the Droplet (created by Nginx Proxy Manager setup)

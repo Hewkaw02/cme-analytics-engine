@@ -1,0 +1,18 @@
+[Unit]
+Description=CME Analytics Engine Scheduler
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/cme-analytics-engine
+ExecStart=/usr/bin/node dist/main.js --mode scheduler
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cme-scheduler
+
+[Install]
+WantedBy=multi-user.target

@@ -1,5 +1,9 @@
 version: '3.9'
 
+networks:
+  cme-net:
+    driver: bridge
+
 services:
   db:
     image: timescale/timescaledb:latest-pg16
@@ -9,7 +13,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-cme_data}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5433}:5432" # Exposed on port 5433 on the host to avoid conflict with Trade-Project (5432)
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -18,6 +22,8 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+    networks:
+      - cme-net
 
   fetcher:
     build:
@@ -36,8 +42,56 @@ services:
       - ./output:/app/output
       - ./logs:/app/logs
       - ./errors:/app/errors
+      - ./config:/app/config
     restart: unless-stopped
-    shm_size: '2gb'  # Chrome/Chromium requires shared memory
+    shm_size: '2gb' # Chrome/Chromium requires shared memory
+    networks:
+      - cme-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cme-api
+    command: ["npm", "run", "dashboard"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-cme_user}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-cme_data}
+      DASHBOARD_PORT: 3002
+      NODE_ENV: production
+    ports:
+      - "${API_PORT:-3002}:3002"
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./errors:/app/errors
+      - ./config:/app/config
+    restart: unless-stopped
+    networks:
+      - cme-net
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: cme-dashboard
+    depends_on:
+      api:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      BACKEND_API_URL: http://api:3002
+      PORT: 3000
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+    volumes:
+      - ./output:/output # Mounted to /output to match the Next.js relative path resolution (../output)
+    restart: unless-stopped
+    networks:
+      - cme-net
 
 volumes:
   pgdata:

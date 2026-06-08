@@ -14,7 +14,8 @@ export type JobType =
   | 'BULLETIN'
   | 'OI_SUMMARY'
   | 'RESAMPLE'
-  | 'ANALYSIS';
+  | 'ANALYSIS'
+  | 'VOL2VOL';
 
 export interface CreateJobInput {
   run_date: string;           // YYYY-MM-DD

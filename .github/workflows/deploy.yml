@@ -1,0 +1,55 @@
+name: Deploy CME Analytics Engine
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    name: Deploy to Droplet
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Execute Deployment over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          envs: BRANCH_NAME
+          script: |
+            echo "🚀 Starting CME Analytics Engine Deployment for branch: $BRANCH_NAME"
+            
+            # Go to project directory (please change this if your project path on the server is different)
+            cd ~/cme-analytics-engine || { echo "Project directory not found!"; exit 1; }
+            
+            # Update codebase
+            echo "📦 Pulling latest changes from GitHub..."
+            git fetch origin
+            git checkout $BRANCH_NAME
+            git reset --hard origin/$BRANCH_NAME
+            
+            # Determine Environment prefix
+            if [ "$BRANCH_NAME" = "main" ]; then
+              PROJECT_PREFIX="cme-prod"
+            else
+              PROJECT_PREFIX="cme-dev"
+            fi
+            
+            echo "⚙️  Deploying environment (Profile: $PROJECT_PREFIX)..."
+            
+            # Ensure the output, logs, and errors folders exist on the host machine
+            mkdir -p output logs errors config
+            
+            # Run Docker Compose build and recreate containers
+            # We use the local .env file already present in ~/cme-analytics-engine/.env on the server
+            docker compose -p $PROJECT_PREFIX -f docker-compose.yml -f docker-compose.deploy.yml up -d --build
+            
+            # Clean up old unused images to save disk space
+            docker image prune -f
+            
+            echo "✅ CME Analytics Engine Deployment completed successfully!"

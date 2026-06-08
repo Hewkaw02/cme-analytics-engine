@@ -15,11 +15,23 @@ export class HolidayCalendar {
   ]);
 
   /**
-   * Check if the date is a weekend (Saturday = 6, Sunday = 0)
+   * Check if the date is a weekend according to CME session hours (Chicago Time).
+   * CME is closed from Friday 17:00 CT to Sunday 17:00 CT.
    */
   public static isWeekend(date: Date): boolean {
     const day = date.getDay();
-    return day === 0 || day === 6;
+    const hours = date.getHours();
+
+    if (day === 6) {
+      return true; // Saturday
+    }
+    if (day === 5 && hours >= 17) {
+      return true; // Friday after 17:00 CT
+    }
+    if (day === 0 && hours < 17) {
+      return true; // Sunday before 17:00 CT
+    }
+    return false;
   }
 
   /**
@@ -30,7 +42,18 @@ export class HolidayCalendar {
       return true;
     }
 
-    const formattedDate = format(date, 'yyyy-MM-dd');
+    const day = date.getDay();
+    const hours = date.getHours();
+
+    // Determine which date to check for holiday.
+    // If it's Sunday after 17:00 CT, we check if the next day (Monday) is a holiday.
+    let checkDate = date;
+    if (day === 0 && hours >= 17) {
+      const nextDay = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+      checkDate = nextDay;
+    }
+
+    const formattedDate = format(checkDate, 'yyyy-MM-dd');
 
     // 1. Check DB first if available
     try {

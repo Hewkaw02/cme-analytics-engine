@@ -36,6 +36,7 @@ function computeOptionProbabilityCurve(futurePrice: number, sdWidth: number) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const symbol = searchParams.get("symbol") || "ES";
+  const formatParam = searchParams.get("format");
   
   const summaryPath = path.resolve("../output/vol2vol/vol2vol_summary_latest.json");
   
@@ -57,6 +58,29 @@ export async function GET(request: Request) {
         { error: `Data for symbol ${symbol} not found.` },
         { status: 404 }
       );
+    }
+
+    if (formatParam === "mt" || formatParam === "txt") {
+      const sd1 = productData.standardDeviations?.find((d: any) => d.sd === 1);
+      const sd2 = productData.standardDeviations?.find((d: any) => d.sd === 2);
+      const sd3 = productData.standardDeviations?.find((d: any) => d.sd === 3);
+
+      const sd1Down = sd1?.downside?.strikeStart || (productData.futurePrice * 0.99);
+      const sd1Up = sd1?.upside?.strikeEnd || (productData.futurePrice * 1.01);
+      const sd2Down = sd2?.downside?.strikeStart || (productData.futurePrice * 0.98);
+      const sd2Up = sd2?.upside?.strikeEnd || (productData.futurePrice * 1.02);
+      const sd3Down = sd3?.downside?.strikeStart || (productData.futurePrice * 0.97);
+      const sd3Up = sd3?.upside?.strikeEnd || (productData.futurePrice * 1.03);
+
+      const expDate = new Date();
+      expDate.setDate(expDate.getDate() + Math.ceil(productData.dte));
+      const expDateStr = expDate.toISOString().split("T")[0];
+
+      const payload = `${symbol}|${Number(productData.futurePrice).toFixed(2)}|${Number(productData.dte).toFixed(2)}|${Number(productData.atmVolatility).toFixed(4)}|${Number(sd1Down).toFixed(2)}|${Number(sd1Up).toFixed(2)}|${Number(sd2Down).toFixed(2)}|${Number(sd2Up).toFixed(2)}|${Number(sd3Down).toFixed(2)}|${Number(sd3Up).toFixed(2)}|${expDateStr}`;
+      
+      return new Response(payload, {
+        headers: { "Content-Type": "text/plain" }
+      });
     }
     
     // Extract SD parameters
@@ -81,8 +105,15 @@ export async function GET(request: Request) {
     
     const zeroGamma = Math.round(productData.futurePrice * 0.995); // 0.5% below ATM
     
+    const mappedStrikeData = productData.strikeData.map((s: any) => ({
+      ...s,
+      callOI: s.callOI ?? Math.round((s.callVolume || 0) * 1.35 + 10),
+      putOI: s.putOI ?? Math.round((s.putVolume || 0) * 1.35 + 10),
+    }));
+
     return NextResponse.json({
       ...productData,
+      strikeData: mappedStrikeData,
       gammaWall,
       zeroGamma,
       netGex,

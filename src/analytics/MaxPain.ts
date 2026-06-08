@@ -30,7 +30,7 @@ export function calculateMaxPain(options: OptionRecord[]): MaxPainResult {
   }
 
   // If all open interest is zero, max pain strike is 0
-  const totalOi = options.reduce((sum, o) => sum + (o.open_interest ?? 0), 0);
+  const totalOi = options.reduce((sum, o) => sum + Number(o.open_interest ?? 0), 0);
   if (totalOi === 0) {
     return { maxPainStrike: 0, painByStrike: [] };
   }
@@ -44,20 +44,22 @@ export function calculateMaxPain(options: OptionRecord[]): MaxPainResult {
     let putPain = 0;
 
     for (const opt of options) {
-      const oi = opt.open_interest ?? 0;
+      const oi = Number(opt.open_interest ?? 0);
       if (oi === 0) continue;
+
+      const optStrike = Number(opt.strike);
 
       if (opt.option_type === 'C') {
         // Calls: if underlying finishes at testStrike, buyer profits if testStrike > strike
         // Loss to buyer is 0, seller payout is (testStrike - strike) * OI
-        if (testStrike > opt.strike) {
-          callPain += (testStrike - opt.strike) * oi;
+        if (testStrike > optStrike) {
+          callPain += (testStrike - optStrike) * oi;
         }
       } else if (opt.option_type === 'P') {
         // Puts: if underlying finishes at testStrike, buyer profits if testStrike < strike
         // Seller payout is (strike - testStrike) * OI
-        if (testStrike < opt.strike) {
-          putPain += (opt.strike - testStrike) * oi;
+        if (testStrike < optStrike) {
+          putPain += (optStrike - testStrike) * oi;
         }
       }
     }

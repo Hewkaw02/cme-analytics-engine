@@ -3,10 +3,23 @@
 import React, { useState, useEffect } from "react";
 import { Activity, Shield, TrendingUp, Info, RefreshCw, Cpu, Layers, AlertTriangle, BookOpen } from "lucide-react";
 import OptionChart from "../components/OptionChart";
-import VolatilitySurface3D from "../components/VolatilitySurface3D";
 import RiskSidebar from "../components/RiskSidebar";
+import dynamic from "next/dynamic";
+
+const VolatilitySurface3D = dynamic(() => import("../components/VolatilitySurface3D"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] flex items-center justify-center bg-slate-950/40 rounded-2xl border border-slate-800/80">
+      <div className="flex flex-col items-center gap-3">
+        <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin" />
+        <span className="text-slate-500 text-sm">Loading 3D Canvas...</span>
+      </div>
+    </div>
+  ),
+});
 import FormulaBook from "../components/FormulaBook";
 import BacktestConsole from "../components/BacktestConsole";
+import CandlestickChart from "../components/CandlestickChart";
 
 interface StrikeData {
   strike: number;
@@ -47,10 +60,11 @@ interface QuantData {
 
 export default function Home() {
   const [activeSymbol, setActiveSymbol] = useState("ES");
-  const [activeTab, setActiveTab] = useState<"volume" | "oi" | "probability" | "surface" | "backtest">("volume");
+  const [activeTab, setActiveTab] = useState<"volume" | "oi" | "probability" | "surface" | "backtest" | "price">("volume");
   const [data, setData] = useState<QuantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
   const symbols = ["ES", "NQ", "GC", "ZS"];
 
@@ -69,6 +83,24 @@ export default function Home() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/pipeline/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobType: "OPTIONS", symbol: activeSymbol })
+      });
+      if (!res.ok) throw new Error("Sync failed.");
+      alert("Pipeline sync complete! Scraped latest option data and updated analytical metrics.");
+      fetchData(activeSymbol);
+    } catch (err: any) {
+      alert("Sync failed: " + err.message);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -129,11 +161,12 @@ export default function Home() {
         {/* Action Controls */}
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => fetchData(activeSymbol)}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-slate-900 border border-slate-800/80 rounded-xl hover:bg-slate-800 transition-colors"
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-slate-900 border border-slate-800/80 rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-emerald-400" : "text-slate-400"}`} />
-            Sync Pipeline
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing || loading ? "animate-spin text-emerald-400" : "text-slate-400"}`} />
+            {syncing ? "Syncing Pipeline..." : "Sync Pipeline"}
           </button>
         </div>
       </header>
@@ -208,6 +241,16 @@ export default function Home() {
           >
             Backtester Simulation
           </button>
+          <button
+            onClick={() => setActiveTab("price")}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === "price"
+                ? "bg-emerald-500 text-slate-950 shadow-md"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Price Chart
+          </button>
         </div>
       </div>
 
@@ -262,6 +305,8 @@ export default function Home() {
                   <VolatilitySurface3D volData={vol3DPoints} futurePrice={data.futurePrice} />
                 ) : activeTab === "backtest" ? (
                   <BacktestConsole />
+                ) : activeTab === "price" ? (
+                  <CandlestickChart symbol={activeSymbol} />
                 ) : (
                   <OptionChart
                     strikeData={data.strikeData}

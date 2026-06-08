@@ -318,7 +318,7 @@ export enum ErrorType {
 // --- Job Logging ---
 
 export type JobStatus = 'RUNNING' | 'SUCCESS' | 'PARTIAL' | 'FAILED';
-export type JobType = 'OPTIONS' | 'OI' | 'INTRADAY' | 'SETTLEMENT' | 'BULLETIN' | 'ANALYSIS';
+export type JobType = 'OPTIONS' | 'OI' | 'INTRADAY' | 'SETTLEMENT' | 'BULLETIN' | 'ANALYSIS' | 'VOL2VOL' | 'OI_SUMMARY' | 'RESAMPLE';
 
 export interface FetchJobRecord {
   id?: number;
@@ -379,6 +379,36 @@ export interface BacktestTradeRecord {
   exit_reason: string;
 }
 
+// --- Vol2Vol Expected Ranges & Volume Profile ---
+
+export interface Vol2VolSnapshotRecord {
+  id?: number;
+  trade_date: string;
+  fetched_at: string;
+  symbol: string;
+  future_price: number;
+  atm_volatility: number;
+  dte: number;
+  sd1_down: number;
+  sd1_up: number;
+  sd2_down: number;
+  sd2_up: number;
+  sd3_down: number;
+  sd3_up: number;
+  expiry_date: string | null;
+  contract_title: string | null;
+}
+
+export interface Vol2VolStrikeRecord {
+  id?: number;
+  snapshot_id: number;
+  strike: number;
+  call_volume: number;
+  put_volume: number;
+  implied_vol: number | null;
+  settle_vol: number | null;
+}
+
 // --- Database Schema (Kysely) ---
 
 export interface Database {
@@ -395,4 +425,6 @@ export interface Database {
   };
   backtest_runs: BacktestRunRecord;
   backtest_trades: BacktestTradeRecord;
+  vol2vol_snapshots: Vol2VolSnapshotRecord;
+  vol2vol_strike_records: Vol2VolStrikeRecord;
 }

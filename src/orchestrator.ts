@@ -442,6 +442,11 @@ export class Orchestrator {
         return this.executeScraper('SettlementScraper', symbol!, tradeDate);
       }
 
+      case 'VOL2VOL': {
+        logger.info(`Executing VOL2VOL job for ${symbol} on ${tradeDate}`);
+        return this.executeScraper('Vol2VolScraper', symbol!, tradeDate);
+      }
+
       case 'BULLETIN': {
         logger.info(`Executing BULLETIN job for ${tradeDate}`);
         return this.executeScraper('BulletinScraper', undefined, tradeDate);
@@ -569,6 +574,12 @@ export class Orchestrator {
           const timeframes = (timeframe ? timeframe.split(',') : ['1m']).map((tf) => tf.trim()).filter(Boolean);
           const recordsInserted = await scraper.scrapeAllTimeframes(symbol!, tradeDate, timeframes as Timeframe[]);
           return { recordsInserted, recordsSkipped: 0, recordsInvalid: 0 };
+        }
+
+        case 'Vol2VolScraper': {
+          const { Vol2VolScraper } = await import('./scrapers/Vol2VolScraper.js');
+          const scraper = new Vol2VolScraper(this.pool);
+          return await scraper.scrape(symbol!, tradeDate);
         }
 
         case 'SettlementScraper': {
