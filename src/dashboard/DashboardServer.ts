@@ -335,6 +335,110 @@ function getFallbackRegime(symbol: string, vol2volData: any) {
   };
 }
 
+/**
+ * Fetches intraday bars from Yahoo Finance as a fallback when database is empty or connection fails.
+ */
+async function fetchYahooBarsFallback(symbol: string, timeframe: string): Promise<IntradayBar[]> {
+  try {
+    const symbolMap: Record<string, string> = {
+      ES: 'ES=F',
+      NQ: 'NQ=F',
+      GC: 'GC=F',
+      ZS: 'ZS=F',
+    };
+    const yahooSymbol = symbolMap[symbol.toUpperCase()] || `${symbol}=F`;
+    
+    let interval = '5m';
+    let range = '5d';
+    if (timeframe === '1m') {
+      interval = '1m';
+      range = '2d';
+    } else if (timeframe === '5m') {
+      interval = '5m';
+      range = '5d';
+    } else if (timeframe === '15m') {
+      interval = '15m';
+      range = '7d';
+    } else if (timeframe === '30m') {
+      interval = '30m';
+      range = '7d';
+    } else if (timeframe === '1h') {
+      interval = '1h';
+      range = '1mo';
+    }
+
+    logger.info(`Fetching Yahoo Finance fallback chart for ${yahooSymbol} (interval: ${interval}, range: ${range})`);
+
+    const response = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${interval}&range=${range}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+
+    const result = response.data?.chart?.result?.[0];
+    if (!result) return [];
+
+    const timestamps = result.timestamp || [];
+    const quote = result.indicators?.quote?.[0] || {};
+    const opens = quote.open || [];
+    const highs = quote.high || [];
+    const lows = quote.low || [];
+    const closes = quote.close || [];
+    const volumes = quote.volume || [];
+
+    const bars: IntradayBar[] = [];
+    for (let i = 0; i < timestamps.length; i++) {
+      const t = timestamps[i];
+      const open = opens[i];
+      const high = highs[i];
+      const low = lows[i];
+      const close = closes[i];
+      const volume = volumes[i];
+
+      if (open === null || high === null || low === null || close === null) continue;
+
+      const timeStr = new Date(t * 1000).toISOString();
+
+      bars.push({
+        bar_time: timeStr,
+        bar_close_time: timeStr,
+        symbol: symbol.toUpperCase(),
+        timeframe: timeframe,
+        open: Number(open),
+        high: Number(high),
+        low: Number(low),
+        close: Number(close),
+        volume: Number(volume || 0),
+        vwap: Number(close),
+        buy_volume: null,
+        sell_volume: null,
+        delta_volume: null,
+        trade_count: null,
+        session: 'RTH',
+        is_rth: true,
+        vwap_session: Number(close),
+        ema_9: null,
+        ema_21: null,
+        atr_14: null,
+        rsi_14: null,
+        bb_upper: null,
+        bb_lower: null,
+        cvd: null,
+        vwap_sd1_upper: null,
+        vwap_sd1_lower: null,
+        vwap_sd2_upper: null,
+        vwap_sd2_lower: null,
+        fetched_at: new Date().toISOString(),
+      });
+    }
+
+    return bars;
+  } catch (err) {
+    logger.error(`Failed to fetch Yahoo Finance fallback bars for ${symbol}`, { error: (err as Error).message });
+    return [];
+  }
+}
+
 // =====================================================================
 // API Routes
 // =====================================================================
@@ -526,8 +630,7 @@ app.get('/api/profile/:symbol', async (req, res) => {
     const { symbol } = req.params;
     const timeframe = (req.query.timeframe as string) || '1m';
 
-    // Get latest bars (last 500)
-    const bars = await db
+    let bars = await db
       .selectFrom('intraday_bars')
       .selectAll()
       .where('symbol', '=', symbol)
@@ -537,11 +640,18 @@ app.get('/api/profile/:symbol', async (req, res) => {
       .limit(500)
       .execute();
 
-    if (bars.length === 0) {
+    let list = bars.reverse() as IntradayBar[];
+
+    if (list.length === 0) {
+      logger.info(`Database bars for volume profile of ${symbol} is empty. Triggering Yahoo fallback.`);
+      list = await fetchYahooBarsFallback(symbol, timeframe);
+    }
+
+    if (list.length === 0) {
       return res.json({ error: 'No intraday bars found' });
     }
 
-    const profile = calculateVolumeProfile(bars.reverse() as IntradayBar[]);
+    const profile = calculateVolumeProfile(list);
     if (!profile) {
       return res.json({ error: 'Could not calculate volume profile' });
     }
@@ -557,7 +667,25 @@ app.get('/api/profile/:symbol', async (req, res) => {
       profile: topBins,
     });
   } catch (err) {
-    logger.error('GET /api/profile failed', { error: (err as Error).message });
+    logger.error('GET /api/profile failed, attempting fallback', { error: (err as Error).message });
+    try {
+      const { symbol } = req.params;
+      const timeframe = (req.query.timeframe as string) || '1m';
+      const list = await fetchYahooBarsFallback(symbol, timeframe);
+      if (list.length > 0) {
+        const profile = calculateVolumeProfile(list);
+        if (profile) {
+          const topBins = [...profile.profile]
+            .sort((a, b) => b.volume - a.volume)
+            .slice(0, 80)
+            .sort((a, b) => a.price - b.price);
+          return res.json({
+            ...profile,
+            profile: topBins,
+          });
+        }
+      }
+    } catch (_) {}
     res.status(500).json({ error: 'Failed to calculate volume profile' });
   }
 });
@@ -731,9 +859,26 @@ app.get('/api/bars/:symbol', async (req, res) => {
       }
     }
 
+    if (bars.length === 0) {
+      logger.info(`Database bars for ${symbol} are empty. Triggering Yahoo fallback.`);
+      const fallbackBars = await fetchYahooBarsFallback(symbol, timeframe);
+      if (fallbackBars.length > 0) {
+        return res.json(fallbackBars.slice(-limit));
+      }
+    }
+
     res.json(bars.reverse());
   } catch (err) {
-    logger.error('GET /api/bars failed', { error: (err as Error).message });
+    logger.error('GET /api/bars failed, attempting fallback', { error: (err as Error).message });
+    try {
+      const { symbol } = req.params;
+      const timeframe = (req.query.timeframe as string) || '1m';
+      const limit = Math.min(parseInt((req.query.limit as string) || '200', 10), 1000);
+      const fallbackBars = await fetchYahooBarsFallback(symbol, timeframe);
+      if (fallbackBars.length > 0) {
+        return res.json(fallbackBars.slice(-limit));
+      }
+    } catch (_) {}
     res.status(500).json({ error: 'Failed to fetch bars' });
   }
 });
