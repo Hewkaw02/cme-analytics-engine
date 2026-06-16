@@ -4,6 +4,8 @@ import { OptionsParser } from '../../parsers/OptionsParser.js';
 import { HolidayCalendar } from '../../utils/HolidayCalendar.js';
 import { Symbol } from '../../types.js';
 
+process.env.CME_HOLIDAY_DB_LOOKUP = 'false';
+
 describe('Edge Case Testing', () => {
   const parser = new OptionsParser();
 

@@ -11,9 +11,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { format } from 'date-fns';
+import {
+  buildVol2VolToolUrl,
+  VOL2VOL_WRAPPER_URL,
+  type Vol2VolSessionParams,
+} from '../src/scrapers/Vol2VolUrl.js';
 
 const COOKIES_PATH = path.resolve('config/cme-cookies.json');
-const VOL2VOL_URL = 'https://www.cmegroup.com/tools-information/quikstrike/vol2vol-expected-range.html';
 const OUTPUT_DIR = path.resolve('output/vol2vol');
 
 // Handle uncaught exceptions from Playwright internals
@@ -140,29 +144,40 @@ async function main() {
 
   try {
     console.log('3. Navigating to Vol2Vol wrapper on cmegroup.com...');
-    const { insid, qsid } = await withRetry(async () => {
-      await page.goto(VOL2VOL_URL, { waitUntil: 'domcontentloaded', timeout: 90000 });
-      console.log('   Waiting 20 seconds for session initialization...');
-      await new Promise(r => setTimeout(r, 20000));
+    let sessionParams: Vol2VolSessionParams | undefined;
+    try {
+      sessionParams = await withRetry(async () => {
+        await page.goto(VOL2VOL_WRAPPER_URL, { waitUntil: 'domcontentloaded', timeout: 90000 });
+        console.log('   Waiting 20 seconds for session initialization...');
+        await new Promise(r => setTimeout(r, 20000));
 
-      // Get the active frame URL to extract insid and qsid session parameters
-      const qsFrame = page.frames().find((f: any) => f.url().includes('QuikStrikeView.aspx'));
-      if (!qsFrame) {
-        throw new Error('Could not find active QuikStrike iframe. Cookie session might have expired.');
-      }
+        // Get the active frame URL to extract insid and qsid session parameters
+        const qsFrame = page.frames().find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+        if (!qsFrame) {
+          throw new Error('Could not find active QuikStrike iframe. Cookie session might have expired.');
+        }
 
-      const activeFrameUrl = qsFrame.url();
-      const urlObj = new URL(activeFrameUrl);
-      const insidParam = urlObj.searchParams.get('insid');
-      const qsidParam = urlObj.searchParams.get('qsid');
+        const activeFrameUrl = qsFrame.url();
+        const urlObj = new URL(activeFrameUrl);
+        const insidParam = urlObj.searchParams.get('insid');
+        const qsidParam = urlObj.searchParams.get('qsid');
 
-      if (!insidParam || !qsidParam) {
-        throw new Error('Could not extract active session identifiers (insid/qsid) from iframe URL.');
-      }
-      return { insid: insidParam, qsid: qsidParam };
-    }, 3, 'Vol2Vol Wrapper Navigation');
-
-    console.log(`   ✓ Active Session Extracted (insid: ${insid}, qsid: ${qsid})`);
+        if (!insidParam || !qsidParam) {
+          throw new Error('Could not extract active session identifiers (insid/qsid) from iframe URL.');
+        }
+        return { insid: insidParam, qsid: qsidParam };
+      }, 3, 'Vol2Vol Wrapper Navigation');
+    } catch (err: any) {
+      console.warn(`   Wrapper session unavailable: ${err.message}`);
+      console.warn('   Falling back to direct QuikStrike navigation with CME wrapper Referer.');
+    }
+    if (sessionParams) {
+      console.log(
+        `   Active Session Extracted (insid: ${sessionParams.insid}, qsid: ${sessionParams.qsid})`,
+      );
+    } else {
+      console.log('   Using direct QuikStrike fallback for product pages.');
+    }
 
     // Create raw output directory if it doesn't exist
     const rawDir = path.join(OUTPUT_DIR, 'raw');
@@ -171,11 +186,15 @@ async function main() {
     // Scrape each product
     for (const prod of productsToScrape) {
       console.log(`\n4. Scraping ${prod.name} (${prod.symbol})...`);
-      const directUrl = `https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedV2VExpectedRange&pid=${prod.pid}&pf=${prod.pf}&insid=${insid}&qsid=${qsid}`;
+      const directUrl = buildVol2VolToolUrl(prod, sessionParams);
       
       try {
         const settings = await withRetry(async () => {
-          await page.goto(directUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+          const gotoOptions: any = { waitUntil: 'domcontentloaded', timeout: 60000 };
+          if (!sessionParams) {
+            gotoOptions.referer = VOL2VOL_WRAPPER_URL;
+          }
+          await page.goto(directUrl, gotoOptions);
           // Wait for chart scripts to fully render
           await new Promise(r => setTimeout(r, 10000));
 
@@ -381,4 +400,3 @@ async function main() {
 }
 
 main();
-

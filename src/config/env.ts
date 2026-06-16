@@ -37,6 +37,7 @@ const envSchema = z.object({
   CIRCUIT_BREAKER_RESET_MS: z.string().transform(Number).default('300000'),
 
   TIMEZONE: z.string().default('America/Chicago'),
+  SCHEDULER_TIMEZONE: z.string().default('Asia/Bangkok'),
 
   // Hourly analysis job
   ANALYSIS_ENABLED: z

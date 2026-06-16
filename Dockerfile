@@ -1,7 +1,8 @@
 FROM node:20-slim
 
 # Install Chromium dependencies (for camofox headless browser)
-RUN apt-get update && apt-get install -y \
+RUN sed -i 's|^URIs: http://deb.debian.org/debian$|URIs: http://mirror.kku.ac.th/debian|g' /etc/apt/sources.list.d/debian.sources || true
+RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     ca-certificates \
     fonts-liberation \

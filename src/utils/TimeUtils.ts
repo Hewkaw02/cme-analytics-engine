@@ -1,9 +1,31 @@
-import { format, addDays, differenceInDays } from 'date-fns';
+import { differenceInCalendarDays } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
 const CT_TIMEZONE = 'America/Chicago';
 
 export class TimeUtils {
+  private static getActiveContractOverride(symbol: string): string | undefined {
+    const override = process.env[`ACTIVE_CONTRACT_${symbol}`] || process.env[`${symbol}_ACTIVE_CONTRACT`];
+    const normalized = override?.trim();
+    return normalized || undefined;
+  }
+
+  private static parseCMECalendarDate(value: string): Date {
+    const trimmed = value.trim();
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (dateOnly) {
+      const [, year, month, day] = dateOnly;
+      return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new Error(`Invalid CME calendar date: ${value}`);
+    }
+
+    return this.parseCMECalendarDate(formatInTimeZone(parsed, CT_TIMEZONE, 'yyyy-MM-dd'));
+  }
+
   static getCTNow(): Date {
     return toZonedTime(new Date(), CT_TIMEZONE);
   }
@@ -31,12 +53,10 @@ export class TimeUtils {
     return false;
   }
 
-  static getDaysToExpiry(expiryDate: string): number {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expiry = new Date(expiryDate);
-    expiry.setHours(0, 0, 0, 0);
-    return differenceInDays(expiry, today);
+  static getDaysToExpiry(expiryDate: string, now: Date = new Date()): number {
+    const today = this.parseCMECalendarDate(formatInTimeZone(now, CT_TIMEZONE, 'yyyy-MM-dd'));
+    const expiry = this.parseCMECalendarDate(expiryDate);
+    return differenceInCalendarDays(expiry, today);
   }
 
   /**
@@ -58,9 +78,11 @@ export class TimeUtils {
    * Rollover: Monday prior to 3rd Friday of expiry month.
    */
   static getActiveContractCode(symbol: string, date: Date = new Date()): string {
+    const override = this.getActiveContractOverride(symbol);
+    if (override) return override;
+
     const year = date.getFullYear();
     const month = date.getMonth(); // 0-indexed
-    const day = date.getDate();
 
     if (symbol === 'ES' || symbol === 'NQ') {
       const quarters = [2, 5, 8, 11]; // Mar, Jun, Sep, Dec (0-indexed)
@@ -93,9 +115,12 @@ export class TimeUtils {
     }
 
     if (symbol === 'GC') {
-      // GC has different rollover, usually every even month or specific liquidity.
-      // Simplification: use 'G' if unknown
-      return 'GCG6'; // Feb 2026 placeholder
+      const contractMonths = [1, 3, 5, 7, 9, 11]; // Feb, Apr, Jun, Aug, Oct, Dec
+      const codes = ['G', 'J', 'M', 'Q', 'V', 'Z'];
+      const nextIndex = contractMonths.findIndex((contractMonth) => month <= contractMonth);
+      const targetIndex = nextIndex === -1 ? 0 : nextIndex;
+      const targetYear = nextIndex === -1 ? year + 1 : year;
+      return `${symbol}${codes[targetIndex]}${targetYear % 10}`;
     }
 
     return 'G';

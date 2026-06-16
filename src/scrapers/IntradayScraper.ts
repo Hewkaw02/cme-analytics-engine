@@ -5,12 +5,17 @@ import { IntradayParser, CmeChartRaw } from '../parsers/IntradayParser.js';
 import { IntradayRepository } from '../db/repositories/IntradayRepository.js';
 import { humanDelay } from '../utils/Delay.js';
 import { TimeUtils } from '../utils/TimeUtils.js';
-import { Timeframe } from '../types.js';
+import { IntradayBar, Timeframe } from '../types.js';
 
 export interface IntradayResult {
   symbol: string;
   timeframe: string;
-  bars: any[];
+  bars: IntradayBar[];
+}
+
+export interface IntradayScrapeRunResult {
+  recordsInserted: number;
+  results: IntradayResult[];
 }
 
 export class IntradayScraper extends BaseScraper {
@@ -133,6 +138,18 @@ export class IntradayScraper extends BaseScraper {
       trade_count: null,
       session: TimeUtils.isRegularHours(symbol, new Date(t * 1000)) ? 'RTH' : 'ETH',
       is_rth: TimeUtils.isRegularHours(symbol, new Date(t * 1000)),
+      vwap_session: null,
+      ema_9: null,
+      ema_21: null,
+      atr_14: null,
+      rsi_14: null,
+      bb_upper: null,
+      bb_lower: null,
+      cvd: null,
+      vwap_sd1_upper: null,
+      vwap_sd1_lower: null,
+      vwap_sd2_upper: null,
+      vwap_sd2_lower: null,
       fetched_at: new Date().toISOString(),
     })).filter((b: any) => b.open != null && b.close != null);
 
@@ -143,10 +160,11 @@ export class IntradayScraper extends BaseScraper {
     symbol: string,
     tradeDate: string,
     timeframes: Timeframe[] = Object.keys(this.PERIODS) as Timeframe[],
-  ): Promise<number> {
+  ): Promise<IntradayScrapeRunResult> {
     const start = new Date(`${tradeDate}T00:00:00Z`);
     const end = new Date();
     let totalInserted = 0;
+    const results: IntradayResult[] = [];
 
     for (const timeframe of timeframes) {
       try {
@@ -154,6 +172,7 @@ export class IntradayScraper extends BaseScraper {
         if (result.bars.length > 0) {
             const inserted = await this.repo.upsertIntradayBars(result.bars);
             totalInserted += inserted;
+            results.push(result);
             logger.info(`[IntradayScraper] Saved ${result.bars.length} bars for ${symbol} ${timeframe}`);
         }
       } catch (err: any) {
@@ -162,7 +181,7 @@ export class IntradayScraper extends BaseScraper {
       await humanDelay(1000, 2000);
     }
 
-    return totalInserted;
+    return { recordsInserted: totalInserted, results };
   }
 
   async getActiveContract(symbol: string): Promise<string> {

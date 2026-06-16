@@ -10,12 +10,13 @@ import { humanDelay } from './utils/Delay.js';
 
 /**
  * Cron job definition per Spec §14.1.
- * All times are in America/Chicago (CT).
+ * Times are in America/Chicago (CT) unless a job overrides the scheduler timezone.
  */
 interface CronJobDef {
   name: string;
   expression: string;      // node-cron expression (5-field, seconds not included)
   description: string;
+  timezone?: string;
   handler: (orchestrator: Orchestrator, tradeDate: string) => Promise<void>;
 }
 
@@ -64,8 +65,9 @@ function withHolidayGuard(
 const CRON_JOBS: CronJobDef[] = [
   {
     name: 'vol2vol_intraday',
-    expression: '*/15 17-23,0-16 * * 1-5',
-    description: 'Fetch CME Vol2Vol expected range data every 15 minutes during trading hours',
+    expression: '*/15 * * * *',
+    description: 'Fetch CME Vol2Vol expected range data every 15 minutes around the clock',
+    timezone: env.SCHEDULER_TIMEZONE,
     handler: async (orch, tradeDate) => {
       logger.info('[Scheduler] Running vol2vol_intraday');
       for (const symbol of ['ES', 'NQ', 'GC']) {
@@ -89,8 +91,9 @@ const CRON_JOBS: CronJobDef[] = [
   },
   {
     name: 'intraday_1m_gc',
-    expression: '*/5 17-23,0-15 * * 0-5',
-    description: 'Fetch GC 1-minute intraday bars every 5 minutes during trading hours (including Sunday)',
+    expression: '*/3 * * * *',
+    description: 'Fetch GC 1-minute intraday bars every 3 minutes around the clock',
+    timezone: env.SCHEDULER_TIMEZONE,
     handler: async (orch, tradeDate) => {
       logger.info('[Scheduler] Running intraday_1m_gc');
       await orch.runIntradayPipeline(tradeDate, '1m', ['GC']);
@@ -211,7 +214,9 @@ export class Scheduler {
       return;
     }
 
-    logger.info(`[Scheduler] Starting ${CRON_JOBS.length} cron jobs (TZ: ${env.TIMEZONE})`);
+    logger.info(
+      `[Scheduler] Starting ${CRON_JOBS.length} cron jobs (Market TZ: ${env.TIMEZONE}, Scheduler TZ: ${env.SCHEDULER_TIMEZONE})`,
+    );
 
     for (const jobDef of CRON_JOBS) {
       const guarded = withHolidayGuard(jobDef.name, jobDef.handler);
@@ -230,13 +235,15 @@ export class Scheduler {
           }
         },
         {
-          timezone: env.TIMEZONE,
+          timezone: jobDef.timezone ?? env.TIMEZONE,
           scheduled: true,
         },
       );
 
       this.tasks.push(task);
-      logger.info(`[Scheduler] Registered: ${jobDef.name} — ${jobDef.expression} — ${jobDef.description}`);
+      logger.info(
+        `[Scheduler] Registered: ${jobDef.name} — ${jobDef.expression} (${jobDef.timezone ?? env.TIMEZONE}) — ${jobDef.description}`,
+      );
     }
 
     this.running = true;
@@ -266,11 +273,12 @@ export class Scheduler {
   /**
    * Get the list of registered job names and their cron expressions.
    */
-  getJobs(): Array<{ name: string; expression: string; description: string }> {
+  getJobs(): Array<{ name: string; expression: string; description: string; timezone: string }> {
     return CRON_JOBS.map(j => ({
       name: j.name,
       expression: j.expression,
       description: j.description,
+      timezone: j.timezone ?? env.TIMEZONE,
     }));
   }
 }

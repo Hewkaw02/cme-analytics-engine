@@ -37,6 +37,94 @@ export class Vol2VolScraper extends BaseScraper {
     );
   }
 
+  private async autoLogin(page: any): Promise<boolean> {
+    const email = process.env.CME_EMAIL;
+    const password = process.env.CME_PASSWORD;
+    if (!email || !password) {
+      logger.warn('[Vol2VolScraper] No CME credentials found in .env');
+      return false;
+    }
+
+    logger.info('[Vol2VolScraper] Attempting auto-login using .env credentials...');
+    try {
+      await page.goto('https://www.cmegroup.com/', { waitUntil: 'domcontentloaded' });
+      await humanDelay(3000, 5000);
+
+      await page.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll('button, a'));
+        const loginBtn = buttons.find((b: any) => b.textContent?.trim().toLowerCase() === 'log in');
+        if (loginBtn) (loginBtn as HTMLElement).click();
+      });
+
+      logger.info('[Vol2VolScraper] Navigating to login page via homepage click...');
+      await humanDelay(5000, 8000);
+
+      const filledCredentials = await page.evaluate(({ email, password }: any) => {
+        const results: string[] = [];
+
+        const emailSelectors = ['#user', 'input[name="email"]', 'input[name="username"]', 'input[type="email"]', 'input[id="email"]', 'input[id="username"]', '#signInName'];
+        let emailInput: any = null;
+        for (const sel of emailSelectors) { emailInput = document.querySelector(sel); if (emailInput) break; }
+
+        if (emailInput) {
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeInputValueSetter) nativeInputValueSetter.call(emailInput, email);
+          else emailInput.value = email;
+          emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+          emailInput.dispatchEvent(new Event('change', { bubbles: true }));
+          results.push('Email filled');
+        }
+
+        const passwordSelectors = ['#pwd', 'input[name="password"]', 'input[type="password"]', 'input[id="password"]', '#password'];
+        let passwordInput: any = null;
+        for (const sel of passwordSelectors) { passwordInput = document.querySelector(sel); if (passwordInput) break; }
+
+        if (passwordInput) {
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+          if (nativeInputValueSetter) nativeInputValueSetter.call(passwordInput, password);
+          else passwordInput.value = password;
+          passwordInput.dispatchEvent(new Event('input', { bubbles: true }));
+          passwordInput.dispatchEvent(new Event('change', { bubbles: true }));
+          results.push('Password filled');
+
+          setTimeout(() => {
+            const submitBtn = document.querySelector('button[type="submit"], input[type="submit"], #login-button, .login-button') as HTMLElement;
+            if (submitBtn) submitBtn.click();
+            else {
+              const form = passwordInput?.closest('form');
+              if (form) {
+                const formBtn = form.querySelector('button, input[type="submit"]') as HTMLElement;
+                if (formBtn) formBtn.click();
+              }
+            }
+          }, 500);
+        }
+        return results;
+      }, { email, password });
+
+      logger.info('[Vol2VolScraper] Credentials submitted...', { results: filledCredentials });
+      await humanDelay(15000, 20000);
+
+      const currentUrl = page.url();
+      if (!currentUrl.includes('login.cmegroup.com') && !currentUrl.includes('/sso/login')) {
+         logger.info('[Vol2VolScraper] Auto-login successful!');
+         const ctx = page.context ? page.context() : null;
+         if (ctx && typeof ctx.storageState === 'function') {
+           const state = await ctx.storageState();
+           if (!fs.existsSync(path.dirname(COOKIES_PATH))) fs.mkdirSync(path.dirname(COOKIES_PATH), { recursive: true });
+           fs.writeFileSync(COOKIES_PATH, JSON.stringify(state, null, 2));
+           logger.info('[Vol2VolScraper] New cookies saved');
+         }
+         return true;
+      }
+      logger.warn('[Vol2VolScraper] Login timeout or still on login page. URL: ' + currentUrl);
+      return false;
+    } catch (e) {
+      logger.warn('[Vol2VolScraper] Auto-login failed', { error: String(e) });
+      return false;
+    }
+  }
+
   private async doScrape(symbol: Symbol, tradeDate: string): Promise<{ recordsInserted: number; recordsSkipped: number; recordsInvalid: number }> {
     const prod = PRODUCT_MAPPING[symbol];
     if (!prod) {
@@ -66,28 +154,46 @@ export class Vol2VolScraper extends BaseScraper {
       await humanDelay(15000, 20000); // Wait for session setup inside frame
 
       // Playwright frame URL extraction
-      const frames = rawPage.frames ? rawPage.frames() : [];
-      const qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+      let frames = rawPage.frames ? rawPage.frames() : [];
+      let qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+
       if (!qsFrame) {
-        throw new Error('[Vol2VolScraper] Could not find QuikStrike iframe. Cookie session might have expired.');
+        logger.warn('[Vol2VolScraper] QuikStrike iframe not found. Session might be expired. Triggering auto-login...');
+        const loggedIn = await this.autoLogin(page);
+        if (loggedIn) {
+          logger.info('[Vol2VolScraper] Returning to wrapper URL after successful login...');
+          await page.goto(VOL2VOL_URL, { waitUntil: 'domcontentloaded' });
+          await humanDelay(15000, 20000);
+          frames = rawPage.frames ? rawPage.frames() : [];
+          qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+        }
       }
 
-      const activeFrameUrl = qsFrame.url();
-      const urlObj = new URL(activeFrameUrl);
-      const insid = urlObj.searchParams.get('insid');
-      const qsid = urlObj.searchParams.get('qsid');
+      let directUrl = `https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedV2VExpectedRange&pid=${prod.pid}&pf=${prod.pf}`;
+      const gotoOptions: any = { waitUntil: 'domcontentloaded' };
 
-      if (!insid || !qsid) {
-        throw new Error('[Vol2VolScraper] Could not extract active session identifiers (insid/qsid) from iframe URL.');
+      if (!qsFrame) {
+        logger.warn('[Vol2VolScraper] QuikStrike iframe still not found. Proceeding with direct navigation fallback using Referer.');
+        gotoOptions.referer = VOL2VOL_URL;
+      } else {
+        const activeFrameUrl = qsFrame.url();
+        const urlObj = new URL(activeFrameUrl);
+        const insid = urlObj.searchParams.get('insid');
+        const qsid = urlObj.searchParams.get('qsid');
+
+        if (insid && qsid) {
+          logger.info(`[Vol2VolScraper] Session active: insid=${insid}, qsid=${qsid}`);
+          directUrl += `&insid=${insid}&qsid=${qsid}`;
+        } else {
+          logger.warn('[Vol2VolScraper] Could not extract active session identifiers (insid/qsid) from iframe URL. Using fallback Referer.');
+          gotoOptions.referer = VOL2VOL_URL;
+        }
       }
-
-      logger.info(`[Vol2VolScraper] Session active: insid=${insid}, qsid=${qsid}`);
 
       // 3. Navigate directly to direct chart URL
-      const directUrl = `https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedV2VExpectedRange&pid=${prod.pid}&pf=${prod.pf}&insid=${insid}&qsid=${qsid}`;
       logger.info(`[Vol2VolScraper] Navigating directly to direct view: ${directUrl}`);
       
-      await page.goto(directUrl, { waitUntil: 'domcontentloaded' });
+      await page.goto(directUrl, gotoOptions);
       await humanDelay(8000, 12000); // Wait for chart scripts to fully render
 
       // Extract JSONSettings string from raw page source

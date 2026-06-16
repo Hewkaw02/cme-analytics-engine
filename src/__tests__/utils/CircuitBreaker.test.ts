@@ -1,4 +1,4 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert';
 import { CircuitBreaker, CircuitOpenError } from '../../utils/CircuitBreaker.js';
 
@@ -12,6 +12,10 @@ describe('CircuitBreaker', () => {
       resetTimeoutMs: 100,
       errorRateThreshold: 0.5,
     });
+  });
+
+  afterEach(() => {
+    cb.destroy();
   });
 
   it('starts in CLOSED state', () => {

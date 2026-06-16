@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { db } from '../db/client.js';
 import { logger } from './logger.js';
 
 /**
@@ -13,6 +12,14 @@ export class HolidayCalendar {
     '2026-05-25', '2026-06-19', '2026-07-03', '2026-09-07',
     '2026-11-26', '2026-12-25',
   ]);
+
+  private static isDatabaseLookupEnabled(): boolean {
+    const raw = process.env.CME_HOLIDAY_DB_LOOKUP;
+    if (raw === undefined) {
+      return true;
+    }
+    return ['1', 'true', 'yes', 'y', 'on'].includes(raw.trim().toLowerCase());
+  }
 
   /**
    * Check if the date is a weekend according to CME session hours (Chicago Time).
@@ -55,8 +62,17 @@ export class HolidayCalendar {
 
     const formattedDate = format(checkDate, 'yyyy-MM-dd');
 
-    // 1. Check DB first if available
+    if (this.staticHolidays.has(formattedDate)) {
+      return true;
+    }
+
+    if (!this.isDatabaseLookupEnabled()) {
+      return false;
+    }
+
+    // Check DB for holidays not covered by the static fallback list.
     try {
+      const { db } = await import('../db/client.js');
       const holiday = await db
         .selectFrom('cme_holidays')
         .select('holiday_name')
@@ -72,7 +88,6 @@ export class HolidayCalendar {
       logger.debug('HolidayCalendar: DB check failed, using static fallback', { error: String(err) });
     }
 
-    // 2. Fallback to static list
-    return this.staticHolidays.has(formattedDate);
+    return false;
   }
 }

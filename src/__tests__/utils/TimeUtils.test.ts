@@ -47,9 +47,16 @@ describe('TimeUtils', () => {
     });
 
     it('should return 0 for today', () => {
-      const today = new Date().toISOString().slice(0, 10);
-      const result = TimeUtils.getDaysToExpiry(today);
+      const now = new Date();
+      const today = TimeUtils.formatCT(now, 'yyyy-MM-dd');
+      const result = TimeUtils.getDaysToExpiry(today, now);
       assert.equal(result, 0);
+    });
+
+    it('should treat date-only expiry as CME Central Time calendar days', () => {
+      const bangkokEarlyMorning = new Date('2026-06-16T02:00:00+07:00');
+      assert.equal(TimeUtils.getDaysToExpiry('2026-06-15', bangkokEarlyMorning), 0);
+      assert.equal(TimeUtils.getDaysToExpiry('2026-06-16', bangkokEarlyMorning), 1);
     });
 
     it('should return negative for past expiry', () => {
@@ -78,6 +85,29 @@ describe('TimeUtils', () => {
       const date = new Date('2025-05-12T12:00:00Z');
       const formatted = TimeUtils.formatCT(date, 'yyyy-MM-dd');
       assert.match(formatted, /^\d{4}-\d{2}-\d{2}$/);
+    });
+  });
+
+  describe('getActiveContractCode', () => {
+    it('should derive GC contract month from the date instead of returning the old placeholder', () => {
+      const contract = TimeUtils.getActiveContractCode('GC', new Date('2026-06-15T00:00:00Z'));
+      assert.equal(contract, 'GCM6');
+    });
+
+    it('should allow explicit active contract overrides for forward testing', () => {
+      const previous = process.env.ACTIVE_CONTRACT_GC;
+      process.env.ACTIVE_CONTRACT_GC = 'GCQ6';
+
+      try {
+        const contract = TimeUtils.getActiveContractCode('GC', new Date('2026-06-15T00:00:00Z'));
+        assert.equal(contract, 'GCQ6');
+      } finally {
+        if (previous === undefined) {
+          delete process.env.ACTIVE_CONTRACT_GC;
+        } else {
+          process.env.ACTIVE_CONTRACT_GC = previous;
+        }
+      }
     });
   });
 });

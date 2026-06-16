@@ -12,6 +12,7 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "script:test-session": "tsx scripts/test-session.ts",
+    "script:cme-login": "tsx scripts/cme-login.ts",
     "build": "tsc",
     "backfill": "tsx scripts/backfill.ts",
     "recompute": "tsx scripts/recompute-analytics.ts",

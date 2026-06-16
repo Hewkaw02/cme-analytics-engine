@@ -2,6 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { HolidayCalendar } from '../../utils/HolidayCalendar.js';
 
+process.env.CME_HOLIDAY_DB_LOOKUP = 'false';
+
 describe('HolidayCalendar', () => {
   it('should identify weekends as holidays', async () => {
     // 2026-05-10 is Sunday

@@ -455,6 +455,9 @@ export class Orchestrator {
       case 'OI_SUMMARY': {
         logger.info(`Executing OI_SUMMARY computation for ${symbol} on ${tradeDate}`);
         const { computeOISummary, upsertOISummaries } = await import('./analytics/OISummary.js');
+        const { computeOIByStrike } = await import('./analytics/OIByStrike.js');
+        const { exportForwardTestCsvs } = await import('./exporters/ForwardTestExporter.js');
+        const { env } = await import('./config/env.js');
         const { getPool } = await import('./db/client.js');
         const { OptionsRepository } = await import('./db/repositories/OptionsRepository.js');
 
@@ -463,7 +466,19 @@ export class Orchestrator {
         // Fetch today's options data for the symbol from DB
         const optionsData = await optRepo.getOptionsForDate(symbol!, tradeDate);
         const summaries = await computeOISummary(pgPool, optionsData, symbol!, tradeDate);
+        const strikeOI = computeOIByStrike(optionsData, symbol!, tradeDate);
         await upsertOISummaries(pgPool, summaries);
+        try {
+          await exportForwardTestCsvs({
+            outputDir: env.OUTPUT_DIR,
+            symbol: symbol!,
+            tradeDate,
+            oiSummaries: summaries,
+            strikeOI: strikeOI,
+          });
+        } catch (e) {
+          logger.warn('Failed to export OI summary to CSV', { error: String(e) });
+        }
 
         return {
           recordsInserted: summaries.length,
@@ -542,7 +557,7 @@ export class Orchestrator {
         case 'OIScraper': {
           const { OIScraper } = await import('./scrapers/OIScraper.js');
           const { OIRepository } = await import('./db/repositories/OIRepository.js');
-          const { CSVExporter } = await import('./exporters/CSVExporter.js');
+          const { exportForwardTestCsvs } = await import('./exporters/ForwardTestExporter.js');
           const { env } = await import('./config/env.js');
           const { db: kyselyInstance } = await import('./db/client.js');
           
@@ -552,8 +567,17 @@ export class Orchestrator {
           const result = await scraper.scrape(symbol!, tradeDate);
           if (result.futuresOI.length > 0) {
             await repo.upsertFuturesOI(result.futuresOI);
+          }
+
+          if (result.futuresOI.length > 0 || result.strikeOI.length > 0) {
             try {
-              await CSVExporter.exportFuturesOI(result.futuresOI, symbol!, tradeDate, env.OUTPUT_DIR);
+              await exportForwardTestCsvs({
+                outputDir: env.OUTPUT_DIR,
+                symbol: symbol!,
+                tradeDate,
+                futuresOI: result.futuresOI,
+                strikeOI: result.strikeOI,
+              });
             } catch (e) {
               logger.warn('Failed to export OI to CSV', { error: String(e) });
             }
@@ -569,11 +593,23 @@ export class Orchestrator {
         case 'IntradayScraper': {
           const { IntradayScraper } = await import('./scrapers/IntradayScraper.js');
           const { IntradayRepository } = await import('./db/repositories/IntradayRepository.js');
+          const { exportForwardTestCsvs } = await import('./exporters/ForwardTestExporter.js');
+          const { env } = await import('./config/env.js');
           const repo = new IntradayRepository();
           const scraper = new IntradayScraper(this.pool, repo);
           const timeframes = (timeframe ? timeframe.split(',') : ['1m']).map((tf) => tf.trim()).filter(Boolean);
-          const recordsInserted = await scraper.scrapeAllTimeframes(symbol!, tradeDate, timeframes as Timeframe[]);
-          return { recordsInserted, recordsSkipped: 0, recordsInvalid: 0 };
+          const result = await scraper.scrapeAllTimeframes(symbol!, tradeDate, timeframes as Timeframe[]);
+          try {
+            await exportForwardTestCsvs({
+              outputDir: env.OUTPUT_DIR,
+              symbol: symbol!,
+              tradeDate,
+              intradayResults: result.results,
+            });
+          } catch (e) {
+            logger.warn('Failed to export intraday to CSV', { error: String(e) });
+          }
+          return { recordsInserted: result.recordsInserted, recordsSkipped: 0, recordsInvalid: 0 };
         }
 
         case 'Vol2VolScraper': {

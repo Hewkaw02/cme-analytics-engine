@@ -73,6 +73,30 @@ cme-analytics-engine/
 docker-compose up -d
 ```
 
+#### 📂 Docker Volume Sync
+The `docker-compose.yml` maps host directories to the container:
+- `./output` ➔ `/app/output` (Scraper output files e.g., `vol2vol`, `oi`, `options` CSVs)
+- `./logs` ➔ `/app/logs` (Run and debug logs)
+- `./errors` ➔ `/app/errors` (Screenshots captured when scraping errors occur)
+- `./config` ➔ `/app/config` (CME login cookies and configs)
+
+All files written by the scraper inside Docker will automatically sync back to the host machine's `./output` directory.
+
+#### 🔑 CME Cookie Login & MFA (Crucial ⚠️)
+Because the browser runs in headless mode inside Docker, you cannot solve MFA/Login challenges directly within the container:
+1. When cookies expire, run the login helper **locally on the host machine (Windows)**:
+   ```bash
+   npm run script:cme-login
+   ```
+2. Log in and solve the MFA challenge in the visual Chrome window that opens.
+3. The script will save updated cookies to `./config/cme-cookies.json`, which instantly syncs to the container. No restart or rebuild is required.
+
+#### 🔌 Connecting Consumer Applications (e.g., GoldQuant)
+If consumer applications (like the `GoldQuant` trading bot) read the exported CSVs:
+- **Local Run**: Set `CME_OUTPUT_DIR=D:/GetDataCMEBoy/output` in the consumer's `.env`.
+- **Docker Run**: Mount the directory as a volume (`d:/GetDataCMEBoy/output:/cme_data:ro`) and set the environment variable `CME_OUTPUT_DIR=/cme_data` in the consumer's `docker-compose.yml`.
+
+
 ### Running Locally
 ```bash
 # Run migrations
