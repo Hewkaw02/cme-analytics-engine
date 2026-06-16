@@ -534,7 +534,7 @@ export class Orchestrator {
           const scraper = new OptionsScraper(this.pool);
           const repo = new OptionsRepository();
           
-          const result = await scraper.scrape(symbol! as Symbol);
+          const result = await scraper.scrape(symbol! as Symbol, tradeDate);
           const records = Array.isArray(result) ? result : (result as any)?.records ?? [];
           const summary = (result as any)?.summary || { valid: records.length, invalid: 0, skipped: 0 };
 

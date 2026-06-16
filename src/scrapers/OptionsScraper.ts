@@ -23,15 +23,15 @@ export class OptionsScraper extends BaseScraper {
    * Scrapes options data for a given symbol across all active expiries.
    * Phase 2/3: Single + Multi-Symbol Support.
    */
-  async scrape(symbol: Symbol): Promise<OptionsResult> {
+  async scrape(symbol: Symbol, expectedTradeDate?: string): Promise<OptionsResult> {
     return this.retry(
-      () => this.doScrape(symbol),
+      () => this.doScrape(symbol, expectedTradeDate),
       `OptionsScraper(${symbol})`,
       ScraperErrorType.TRANSIENT,
     );
   }
 
-  private async doScrape(symbol: Symbol): Promise<OptionsResult> {
+  private async doScrape(symbol: Symbol, expectedTradeDate?: string): Promise<OptionsResult> {
     const page = await this.pool.acquire();
     const allRecords: OptionRecord[] = [];
 
@@ -51,6 +51,8 @@ export class OptionsScraper extends BaseScraper {
 
       logger.info(`[OptionsScraper] Found ${expiries.length} expiries for ${symbol}`);
 
+      let dateValidated = false;
+
       for (const expiry of expiries) {
         try {
           logger.info(`[OptionsScraper] Fetching data for ${symbol} expiry: ${expiry.label} (${expiry.code})`);
@@ -62,6 +64,15 @@ export class OptionsScraper extends BaseScraper {
           
           const data = await this.fetchOptionsDataFromApi(page, productId as number, year, month);
           if (data) {
+            // Validate tradeDate in the API response if expectedTradeDate is provided
+            if (expectedTradeDate && !dateValidated && data.tradeDate) {
+              const apiDateStr = new Date(data.tradeDate).toISOString().slice(0, 10);
+              if (apiDateStr !== expectedTradeDate) {
+                throw new Error(`CME options data has not been updated yet for target date: ${expectedTradeDate} (current on site: ${apiDateStr})`);
+              }
+              dateValidated = true;
+            }
+
             const parsed = this.parser.parseOptionsChain(data, symbol, expiry);
             allRecords.push(...parsed);
             logger.info(`[OptionsScraper] Parsed ${parsed.length} records for ${expiry.code}`);
@@ -70,6 +81,10 @@ export class OptionsScraper extends BaseScraper {
           await humanDelay(1000, 2000);
         } catch (err) {
           logger.error(`Failed to fetch/parse expiry ${expiry.code} for ${symbol}`, { error: String(err) });
+          // Propagate the specific date mismatch error to fail the job
+          if (err instanceof Error && err.message.includes('CME options data has not been updated yet')) {
+            throw err;
+          }
         }
       }
 
