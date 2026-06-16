@@ -53,7 +53,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: cme-api
-    command: ["npm", "run", "dashboard"]
+    command: ["node", "dist/dashboard/DashboardServer.js"]
     depends_on:
       db:
         condition: service_healthy
