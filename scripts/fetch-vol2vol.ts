@@ -16,6 +16,7 @@ import {
   VOL2VOL_WRAPPER_URL,
   type Vol2VolSessionParams,
 } from '../src/scrapers/Vol2VolUrl.js';
+import { writeSnapshotTextFileSync } from '../src/exporters/SnapshotFileWriter.js';
 
 const COOKIES_PATH = path.resolve('config/cme-cookies.json');
 const OUTPUT_DIR = path.resolve('output/vol2vol');
@@ -73,7 +74,8 @@ interface ExtractedVol2VolData {
 }
 
 async function main() {
-  const today = format(new Date(), 'yyyyMMdd');
+  const runStartedAt = new Date();
+  const today = format(runStartedAt, 'yyyyMMdd');
   console.log(`=== CME Vol2Vol Expected Range Scraper (${today}) ===\n`);
 
   if (!fs.existsSync(COOKIES_PATH)) {
@@ -212,8 +214,11 @@ async function main() {
 
         // Save raw settings JSON
         const rawFilePath = path.join(rawDir, `vol2vol_raw_${prod.symbol}_${today}.json`);
-        fs.writeFileSync(rawFilePath, JSON.stringify(settings, null, 2));
-        console.log(`   ✓ Saved raw settings: ${rawFilePath}`);
+        const rawSnapshot = writeSnapshotTextFileSync(rawFilePath, JSON.stringify(settings, null, 2), {
+          snapshotTimestamp: runStartedAt,
+        });
+        console.log(`   Saved raw settings: ${rawFilePath}`);
+        console.log(`   Archived raw settings: ${rawSnapshot.archivePath}`);
 
         // Parse extracted details
         const futurePrice = settings.FuturePrice;
@@ -339,8 +344,11 @@ async function main() {
 
         // Save structured extracted JSON
         const cleanFilePath = path.join(OUTPUT_DIR, `vol2vol_${prod.symbol}_${today}.json`);
-        fs.writeFileSync(cleanFilePath, JSON.stringify(extractedData, null, 2));
-        console.log(`   ✓ Saved structured data: ${cleanFilePath}`);
+        const cleanSnapshot = writeSnapshotTextFileSync(cleanFilePath, JSON.stringify(extractedData, null, 2), {
+          snapshotTimestamp: runStartedAt,
+        });
+        console.log(`   Saved structured data: ${cleanFilePath}`);
+        console.log(`   Archived structured data: ${cleanSnapshot.archivePath}`);
 
         // Save screenshot
         const screenshotPath = path.join(OUTPUT_DIR, `vol2vol_${prod.symbol}_${today}.png`);
@@ -377,11 +385,15 @@ async function main() {
         data: scrapedSummary
       };
 
-      fs.writeFileSync(summaryFileDated, JSON.stringify(summaryData, null, 2));
-      fs.writeFileSync(summaryFileLatest, JSON.stringify(summaryData, null, 2));
+      const summaryJson = JSON.stringify(summaryData, null, 2);
+      const summarySnapshot = writeSnapshotTextFileSync(summaryFileDated, summaryJson, {
+        snapshotTimestamp: runStartedAt,
+      });
+      fs.writeFileSync(summaryFileLatest, summaryJson);
       
-      console.log(`   ✓ Summary saved to: ${summaryFileDated}`);
-      console.log(`   ✓ Summary saved to: ${summaryFileLatest}`);
+      console.log(`   Summary saved to: ${summaryFileDated}`);
+      console.log(`   Summary saved to: ${summaryFileLatest}`);
+      console.log(`   Summary archived to: ${summarySnapshot.archivePath}`);
     } else {
       console.log('\n⚠️ No symbols were successfully scraped.');
     }

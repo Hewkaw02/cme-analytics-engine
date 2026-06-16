@@ -91,7 +91,7 @@ describe('TimeUtils', () => {
   describe('getActiveContractCode', () => {
     it('should derive GC contract month from the date instead of returning the old placeholder', () => {
       const contract = TimeUtils.getActiveContractCode('GC', new Date('2026-06-15T00:00:00Z'));
-      assert.equal(contract, 'GCM6');
+      assert.equal(contract, 'GCQ6');
     });
 
     it('should allow explicit active contract overrides for forward testing', () => {

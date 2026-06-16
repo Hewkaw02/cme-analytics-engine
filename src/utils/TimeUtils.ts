@@ -117,9 +117,20 @@ export class TimeUtils {
     if (symbol === 'GC') {
       const contractMonths = [1, 3, 5, 7, 9, 11]; // Feb, Apr, Jun, Aug, Oct, Dec
       const codes = ['G', 'J', 'M', 'Q', 'V', 'Z'];
-      const nextIndex = contractMonths.findIndex((contractMonth) => month <= contractMonth);
-      const targetIndex = nextIndex === -1 ? 0 : nextIndex;
-      const targetYear = nextIndex === -1 ? year + 1 : year;
+      
+      const day = date.getDate();
+      let targetIndex = contractMonths.findIndex((contractMonth) => month <= contractMonth);
+      if (targetIndex === -1) {
+        targetIndex = 0;
+      }
+      
+      const targetMonth = contractMonths[targetIndex];
+      // If we are in the contract month itself, or on/after the 28th of the preceding month, roll over
+      if (month === targetMonth || (month === targetMonth - 1 && day >= 28)) {
+        targetIndex = (targetIndex + 1) % contractMonths.length;
+      }
+      
+      const targetYear = (targetIndex === 0 && month >= 10) ? year + 1 : year;
       return `${symbol}${codes[targetIndex]}${targetYear % 10}`;
     }
 

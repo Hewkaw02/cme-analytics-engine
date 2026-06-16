@@ -53,6 +53,31 @@ If GEX or Max Pain logic changed, recompute historical summaries:
 npm run recompute -- --all
 ```
 
+### 🔌 Manual Fetch & Sync for Consumer Apps (e.g., GoldQuant)
+If a consumer application like **GoldQuant** fails because output files (`options` or `oi`) are missing for the current date (e.g. after clearing the output folder or during holidays):
+
+#### 1. Run the manual fetch directly on the Host (Recommended if Docker engine mismatch occurs)
+Since public options and futures OI do not require logged-in sessions:
+```bash
+# 1. Fetch Options for GC (Defaults to today's date)
+npm run start -- --mode fetch --type OPTIONS --symbol GC
+
+# 2. Fetch Futures OI for GC (Use the last active trading date, e.g., 2026-06-15)
+npm run start -- --mode fetch --type OI --symbol GC --date 2026-06-15
+
+# 3. Calculate OI Summary for GC (Use the last active trading date, e.g., 2026-06-14)
+npm run start -- --mode fetch --type OI_SUMMARY --symbol GC --date 2026-06-14
+```
+
+#### 2. Copy/Sync files to today's date
+If the market is closed (e.g., weekend/holiday) or today's data is not yet published, the files might be saved with the trade date. Copy them to today's date so the consumer app can read them:
+```powershell
+# In Windows PowerShell:
+Copy-Item -Path .\output\oi\GC_options_oi_by_strike_20260614.csv -Destination .\output\oi\GC_options_oi_by_strike_20260616.csv
+Copy-Item -Path .\output\oi\GC_oi_summary_20260614.csv -Destination .\output\oi\GC_oi_summary_20260616.csv
+Copy-Item -Path .\output\oi\GC_futures_oi_20260615.csv -Destination .\output\oi\GC_futures_oi_20260616.csv
+```
+
 ## 📜 Deployment & Operations Updates
 
 ### 1. Vol2Vol Cookie Expiry

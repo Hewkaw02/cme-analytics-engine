@@ -18,6 +18,15 @@ const PRODUCT_MAPPING: Record<string, { name: string; pid: string; pf: string }>
   GC: { name: 'Gold', pid: '40', pf: '6' }
 };
 
+function formatToUSDate(dateStr: string): string {
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return '';
+  const year = parts[0];
+  const month = parseInt(parts[1], 10).toString();
+  const day = parseInt(parts[2], 10).toString();
+  return `${month}/${day}/${year}`;
+}
+
 export class Vol2VolScraper extends BaseScraper {
   private repo: Vol2VolRepository;
 
@@ -193,8 +202,122 @@ export class Vol2VolScraper extends BaseScraper {
       // 3. Navigate directly to direct chart URL
       logger.info(`[Vol2VolScraper] Navigating directly to direct view: ${directUrl}`);
       
-      await page.goto(directUrl, gotoOptions);
+      try {
+        await page.goto(directUrl, gotoOptions);
+      } catch (err: any) {
+        logger.warn(`[Vol2VolScraper] Direct navigation failed: ${err.message}. Clearing cookies and retrying login...`);
+        
+        if (context && typeof context.clearCookies === 'function') {
+          await context.clearCookies();
+        }
+        
+        if (fs.existsSync(COOKIES_PATH)) {
+          try {
+            fs.unlinkSync(COOKIES_PATH);
+            logger.info(`[Vol2VolScraper] Deleted expired cookies file at ${COOKIES_PATH}`);
+          } catch (unlinkErr) {
+            logger.warn(`[Vol2VolScraper] Failed to delete cookie file: ${unlinkErr}`);
+          }
+        }
+        
+        const loggedIn = await this.autoLogin(page);
+        if (!loggedIn) {
+          throw new Error(`[Vol2VolScraper] Re-login failed after navigation error: ${err.message}`);
+        }
+        
+        logger.info('[Vol2VolScraper] Returning to wrapper URL after successful re-login...');
+        await page.goto(VOL2VOL_URL, { waitUntil: 'domcontentloaded' });
+        await humanDelay(15000, 20000);
+        
+        frames = rawPage.frames ? rawPage.frames() : [];
+        qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+        
+        directUrl = `https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedV2VExpectedRange&pid=${prod.pid}&pf=${prod.pf}`;
+        const newGotoOptions: any = { waitUntil: 'domcontentloaded' };
+        
+        if (!qsFrame) {
+          logger.warn('[Vol2VolScraper] QuikStrike iframe still not found after re-login. Proceeding with direct navigation fallback using Referer.');
+          newGotoOptions.referer = VOL2VOL_URL;
+        } else {
+          const activeFrameUrl = qsFrame.url();
+          const urlObj = new URL(activeFrameUrl);
+          const insid = urlObj.searchParams.get('insid');
+          const qsid = urlObj.searchParams.get('qsid');
+          
+          if (insid && qsid) {
+            logger.info(`[Vol2VolScraper] Session active after re-login: insid=${insid}, qsid=${qsid}`);
+            directUrl += `&insid=${insid}&qsid=${qsid}`;
+          } else {
+            logger.warn('[Vol2VolScraper] Could not extract active session identifiers (insid/qsid) after re-login. Using fallback Referer.');
+            newGotoOptions.referer = VOL2VOL_URL;
+          }
+        }
+        
+        logger.info(`[Vol2VolScraper] Retrying direct navigation: ${directUrl}`);
+        await page.goto(directUrl, newGotoOptions);
+      }
       await humanDelay(8000, 12000); // Wait for chart scripts to fully render
+
+      // Dynamic Expiry selection: Find and switch to the contract expiring on tradeDate if available
+      const usDate = formatToUSDate(tradeDate);
+      logger.info(`[Vol2VolScraper] Checking for contract expiring on ${tradeDate} (${usDate})...`);
+      const postbackArg = await page.evaluate((targetDate: string) => {
+        const links = Array.from(document.querySelectorAll('#ctl00_ucSelector_pnlExpirations a'));
+        for (const el of links) {
+          const title = el.getAttribute('title') || '';
+          const cleanTitle = title.replace(/\s+/g, ' ');
+          if (cleanTitle.includes(`Option Expiration: ${targetDate}`) || cleanTitle.includes(`Option Expiration:\t${targetDate}`)) {
+            const href = el.getAttribute('href') || '';
+            const match = href.match(/__doPostBack\('([^']*)'/);
+            if (match) return match[1];
+          }
+        }
+        return null;
+      }, usDate);
+
+      if (postbackArg) {
+        logger.info(`[Vol2VolScraper] Found matching contract. Triggering postback: ${postbackArg}`);
+        try {
+          await Promise.all([
+            (page as any).waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 35000 }).catch(() => {
+              // Asynchronous postback (UpdatePanel) might not trigger a full page navigation,
+              // so a timeout is expected. We will wait a few seconds after postback instead.
+              logger.debug('[Vol2VolScraper] Postback navigation promise resolved or timed out (expected for UpdatePanel).');
+            }),
+            page.evaluate((arg: string) => {
+              const theForm = (document.forms as any)['Form1'] || (document as any).Form1;
+              if (theForm) {
+                let targetInput = theForm.elements['__EVENTTARGET'] || theForm['__EVENTTARGET'];
+                if (!targetInput) {
+                  targetInput = document.createElement('input');
+                  targetInput.type = 'hidden';
+                  targetInput.name = '__EVENTTARGET';
+                  theForm.appendChild(targetInput);
+                }
+                let argInput = theForm.elements['__EVENTARGUMENT'] || theForm['__EVENTARGUMENT'];
+                if (!argInput) {
+                  argInput = document.createElement('input');
+                  argInput.type = 'hidden';
+                  argInput.name = '__EVENTARGUMENT';
+                  theForm.appendChild(argInput);
+                }
+                
+                targetInput.value = arg;
+                argInput.value = '';
+                theForm.submit();
+                return true;
+              }
+              return false;
+            }, postbackArg)
+          ]);
+          logger.info('[Vol2VolScraper] Postback triggered. Waiting for new chart data...');
+          await humanDelay(8000, 12000);
+        } catch (postbackErr) {
+          logger.error('[Vol2VolScraper] Error executing contract postback:', { error: String(postbackErr) });
+        }
+      } else {
+        logger.info(`[Vol2VolScraper] No option contract found expiring on ${tradeDate} in selector. Continuing with default.`);
+      }
 
       // Extract JSONSettings string from raw page source
       const html = rawPage.content ? await rawPage.content() : await page.evaluate(() => document.documentElement.outerHTML);

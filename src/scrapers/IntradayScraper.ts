@@ -45,16 +45,7 @@ export class IntradayScraper extends BaseScraper {
   }
 
   async scrape(symbol: string, timeframe: string, startTime: Date, endTime: Date): Promise<IntradayResult> {
-    try {
-        // Try CME first (though we expect 404 currently)
-        return await this.fetchFromCME(symbol, timeframe, startTime, endTime);
-    } catch (err: any) {
-        if (err.message.includes('404')) {
-            logger.warn(`[IntradayScraper] CME API returned 404 for ${symbol}. Falling back to Yahoo Finance...`);
-            return await this.fetchFromYahoo(symbol, timeframe, startTime, endTime);
-        }
-        throw err;
-    }
+    return await this.fetchFromYahoo(symbol, timeframe, startTime, endTime);
   }
 
   private async fetchFromCME(symbol: string, timeframe: string, startTime: Date, endTime: Date): Promise<IntradayResult> {

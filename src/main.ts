@@ -8,6 +8,26 @@ import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { JobType } from './db/repositories/JobRepository.js';
 
+// Suppress known Camoufox/Playwright unhandled exceptions and rejections
+process.on('uncaughtException', (err) => {
+  if (err.stack?.includes('playwright-core') && err.stack?.includes('location.url')) {
+    return; // Suppress known Camoufox/Playwright bug
+  }
+  logger.error('Uncaught exception:', { error: err instanceof Error ? err.stack : String(err) });
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  const reasonStr = reason instanceof Error ? reason.stack || reason.message : String(reason);
+  if (
+    reasonStr.includes('location.url') ||
+    (reasonStr.includes("reading 'url'") && reasonStr.includes('playwright-core'))
+  ) {
+    return; // Suppress known Camoufox/Playwright bug
+  }
+  logger.error('Unhandled rejection:', { reason: reasonStr });
+});
+
 /**
  * Parse CLI arguments for the CME Data Fetcher.
  *
