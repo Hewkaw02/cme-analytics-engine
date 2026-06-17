@@ -161,6 +161,22 @@ export class BrowserPool {
         // Configure viewport
         await page.setViewportSize(this.config.viewport);
 
+        const originalClose = page.close.bind(page);
+        (page as any).close = async () => {
+          logger.info('Closing page and associated browser instance');
+          try {
+            await originalClose();
+          } catch (err) {
+            logger.warn('Failed to close browser page', { error: String(err) });
+          } finally {
+            try {
+              await browser.close();
+            } catch (err) {
+              logger.warn('Failed to close browser instance', { error: String(err) });
+            }
+          }
+        };
+
         this.activeSessions.add(page as unknown as BrowserPage);
         logger.info('Browser session created via camofox-browser');
         return page as unknown as BrowserPage;

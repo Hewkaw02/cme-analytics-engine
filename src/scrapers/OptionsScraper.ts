@@ -50,6 +50,15 @@ export class OptionsScraper extends BaseScraper {
       }
 
       logger.info(`[OptionsScraper] Found ${expiries.length} expiries for ${symbol}`);
+      
+      const { CME_SETTLEMENT_PRODUCT_CODES } = await import('../config/symbols.js');
+      const settlementId = CME_SETTLEMENT_PRODUCT_CODES[symbol];
+      
+      let metadata: any[] = [];
+      if (settlementId) {
+        logger.info(`[OptionsScraper] Fetching settlements metadata for ${symbol} (Settlement ID: ${settlementId})`);
+        metadata = await this.fetchOptionsSettlementsMetadata(page, settlementId);
+      }
 
       let dateValidated = false;
 
@@ -74,6 +83,44 @@ export class OptionsScraper extends BaseScraper {
             }
 
             const parsed = this.parser.parseOptionsChain(data, symbol, expiry);
+            
+            // Fetch settlements for this specific matched expiry
+            let settlementData: any[] = [];
+            const matchedExp = this.findMatchedExpiration(metadata, expiry);
+            if (matchedExp) {
+              logger.info(`[OptionsScraper] Found matched expiration metadata for ${expiry.label}: productId=${matchedExp.productId}, contractId=${matchedExp.contractId}, expirationCode=${matchedExp.expiration?.code}`);
+              settlementData = await this.fetchOptionsSettlementForExpiry(
+                page,
+                matchedExp.productId,
+                matchedExp.contractId,
+                matchedExp.expiration?.code,
+                expectedTradeDate,
+                matchedExp.tradeDates
+              );
+              logger.info(`[OptionsScraper] Fetched ${settlementData.length} settlement records for ${expiry.code}`);
+            } else {
+              logger.warn(`[OptionsScraper] No matched expiration metadata found for ${expiry.label}`);
+            }
+
+            for (const record of parsed) {
+              const st = settlementData.find(s => 
+                parseFloat(s.strike) === record.strike &&
+                s.type === (record.option_type === 'C' ? 'Call' : 'Put')
+              );
+              
+              if (st) {
+                const parseNum = (val: any) => {
+                  if (!val || val === '-') return 0;
+                  return parseInt(val.toString().replace(/,/g, ''), 10) || 0;
+                };
+                
+                record.open_interest = parseNum(st.openInterest || st.oi) || record.open_interest;
+                if (!record.volume) {
+                  record.volume = parseNum(st.volume) || record.volume;
+                }
+              }
+            }
+
             allRecords.push(...parsed);
             logger.info(`[OptionsScraper] Parsed ${parsed.length} records for ${expiry.code}`);
           }
@@ -93,6 +140,96 @@ export class OptionsScraper extends BaseScraper {
     } finally {
       await this.pool.release(page);
     }
+  }
+
+  private async fetchOptionsSettlementsMetadata(page: BrowserPage, settlementId: string): Promise<any[]> {
+    const url = `https://www.cmegroup.com/CmeWS/mvc/Settlements/Options/TradeDateAndExpirations/${settlementId}`;
+    try {
+      const raw = await page.evaluate(async (fetchUrl: string) => {
+        const res = await fetch(fetchUrl);
+        if (!res.ok) return [];
+        return res.json();
+      }, url);
+      return Array.isArray(raw) ? raw : [];
+    } catch (err) {
+      logger.error(`[OptionsScraper] Failed to fetch Options Settlements Metadata for settlementId ${settlementId}`, { error: String(err) });
+      return [];
+    }
+  }
+
+  private async fetchOptionsSettlementForExpiry(
+    page: BrowserPage,
+    productId: number,
+    contractId: string,
+    expirationCode: string,
+    tradeDate?: string,
+    metaTradeDates?: any[]
+  ): Promise<any[]> {
+    let url = `https://www.cmegroup.com/CmeWS/mvc/Settlements/Options/Settlements/${productId}/OOF?strategy=DEFAULT&optionProductId=${productId}&monthYear=${contractId}&optionExpiration=${productId}-${expirationCode}&pageSize=5000`;
+    
+    let formattedDate = '';
+    if (tradeDate) {
+      const parts = tradeDate.split('-');
+      if (parts.length === 3) {
+        formattedDate = `${parts[1]}/${parts[2]}/${parts[0]}`;
+      }
+    }
+    
+    if (!formattedDate && metaTradeDates && metaTradeDates.length > 0) {
+      formattedDate = metaTradeDates[0].formatedDate;
+    }
+    
+    if (formattedDate) {
+      url += `&tradeDate=${formattedDate}`;
+    }
+
+    try {
+      const raw = await page.evaluate(async (fetchUrl: string) => {
+        const res = await fetch(fetchUrl, {
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!res.ok) return { settlements: [] };
+        return res.json();
+      }, url);
+      return raw?.settlements || [];
+    } catch (err) {
+      logger.error(`[OptionsScraper] Failed to fetch Options Settlement for expiry ${contractId}`, { error: String(err) });
+      return [];
+    }
+  }
+
+  private findMatchedExpiration(metadata: any[], expiry: ExpiryInfo): any | null {
+    const parts = expiry.label.split(' - ');
+    if (parts.length < 2) return null;
+    const groupLabel = parts[0];
+    const expLabel = parts.slice(1).join(' - ');
+
+    // Find the group in metadata
+    const group = metadata.find(g => g.label.toLowerCase() === groupLabel.toLowerCase());
+    if (!group) return null;
+
+    // 1. Try exact label match
+    let found = group.expirations?.find((e: any) => e.label.toLowerCase() === expLabel.toLowerCase());
+    if (found) return found;
+
+    // 2. Try date match (lastTradeDate vs expiry.date)
+    found = group.expirations?.find((e: any) => {
+      if (!e.lastTradeDate?.timestamp) return false;
+      const dateStr = new Date(e.lastTradeDate.timestamp).toISOString().split('T')[0];
+      return dateStr === expiry.date;
+    });
+    if (found) return found;
+
+    // 3. Try month and year match
+    const expiryDate = new Date(expiry.date);
+    const expMonth = expiryDate.getUTCMonth() + 1; // 1-indexed
+    const expYear = expiryDate.getUTCFullYear();
+
+    found = group.expirations?.find((e: any) => {
+      return e.expiration?.month === expMonth && e.expiration?.year === expYear;
+    });
+
+    return found || null;
   }
 
   private async getExpiriesFromApi(page: BrowserPage, productId: number): Promise<ExpiryInfo[]> {

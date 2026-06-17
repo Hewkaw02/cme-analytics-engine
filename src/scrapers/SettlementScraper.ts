@@ -1,6 +1,8 @@
 import { BaseScraper } from './BaseScraper.js';
 import { BrowserPool } from '../browser/BrowserPool.js';
 import { SettlementRecord } from '../types.js';
+import { format, parseISO } from 'date-fns';
+import { logger } from '../utils/logger.js';
 
 import { SYMBOLS } from '../config/symbols.js';
 
@@ -16,7 +18,8 @@ export class SettlementScraper extends BaseScraper {
     const productCode = SYMBOLS[symbol].productCode;
     if (!productCode) throw new Error(`Unknown symbol: ${symbol}`);
 
-    const url = `https://www.cmegroup.com/CmeWS/mvc/Settlements/Futures/Settlements/${productCode}/FUT?strategy=DEFAULT&tradeDate=${tradeDate}&pageSize=500&isProtected&_t=${Date.now()}`;
+    const formattedDate = format(parseISO(tradeDate), 'MM/dd/yyyy');
+    const url = `https://www.cmegroup.com/CmeWS/mvc/Settlements/Futures/Settlements/${productCode}/FUT?strategy=DEFAULT&tradeDate=${formattedDate}&pageSize=500&isProtected&_t=${Date.now()}`;
 
     const page = await this.pool.acquire();
     try {
@@ -34,25 +37,29 @@ export class SettlementScraper extends BaseScraper {
       const records = this.parseSettlement(raw, symbol, tradeDate);
 
       if (records.length > 0) {
-        await this.db
-          .insertInto('daily_settlement')
-          .values(records)
-          .onConflict((oc: any) =>
-            oc.columns(['trade_date', 'symbol', 'expiry_code']).doUpdateSet((eb: any) => ({
-              open: eb.ref('excluded.open'),
-              high: eb.ref('excluded.high'),
-              low: eb.ref('excluded.low'),
-              settle: eb.ref('excluded.settle'),
-              prior_settle: eb.ref('excluded.prior_settle'),
-              change: eb.ref('excluded.change'),
-              est_volume: eb.ref('excluded.est_volume'),
-              prior_oi: eb.ref('excluded.prior_oi'),
-              oi: eb.ref('excluded.oi'),
-              source: eb.ref('excluded.source'),
-              fetched_at: eb.ref('excluded.fetched_at'),
-            })),
-          )
-          .execute();
+        try {
+          await this.db
+            .insertInto('daily_settlement')
+            .values(records)
+            .onConflict((oc: any) =>
+              oc.columns(['trade_date', 'symbol', 'expiry_code']).doUpdateSet((eb: any) => ({
+                open: eb.ref('excluded.open'),
+                high: eb.ref('excluded.high'),
+                low: eb.ref('excluded.low'),
+                settle: eb.ref('excluded.settle'),
+                prior_settle: eb.ref('excluded.prior_settle'),
+                change: eb.ref('excluded.change'),
+                est_volume: eb.ref('excluded.est_volume'),
+                prior_oi: eb.ref('excluded.prior_oi'),
+                oi: eb.ref('excluded.oi'),
+                source: eb.ref('excluded.source'),
+                fetched_at: eb.ref('excluded.fetched_at'),
+              })),
+            )
+            .execute();
+        } catch (dbErr) {
+          logger.error('Failed to insert daily settlements into database', { error: String(dbErr) });
+        }
       }
 
       return records;

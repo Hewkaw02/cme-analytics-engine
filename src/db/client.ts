@@ -86,13 +86,14 @@ export async function query<T extends pg.QueryResultRow = pg.QueryResultRow>(
 
     // If database is not available, return a mock empty result instead of crashing
     // This allows the fetcher to continue even if logging/persistence fails
+    const errorLower = errorMessage.toLowerCase();
     const isConnectionError = 
       !errorMessage || // AggregateError might have empty message
-      errorMessage.includes('ECONNREFUSED') || 
-      errorMessage.includes('AggregateError') ||
-      errorMessage.includes('no pg_hba.conf entry') ||
-      errorMessage.includes('connection') ||
-      errorMessage.includes('pool');
+      errorLower.includes('econnrefused') || 
+      errorLower.includes('aggregateerror') ||
+      errorLower.includes('no pg_hba.conf entry') ||
+      errorLower.includes('connection') ||
+      errorLower.includes('pool');
 
     if (isConnectionError) {
       logger.warn('Database unavailable. Returning mock empty result.');

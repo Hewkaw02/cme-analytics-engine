@@ -56,6 +56,16 @@ npm run recompute -- --all
 ### 🔌 Manual Fetch & Sync for Consumer Apps (e.g., GoldQuant)
 If a consumer application like **GoldQuant** fails because output files (`options` or `oi`) are missing for the current date (e.g. after clearing the output folder or during holidays):
 
+#### Current-file and archive behavior
+Consumer apps should keep reading the top-level current files, for example:
+- `output/options/GC_options_YYYYMMDD.csv`
+- `output/oi/GC_options_oi_by_strike_YYYYMMDD.csv`
+- `output/oi/GC_oi_summary_YYYYMMDD.csv`
+- `output/intraday/GC_1m_YYYYMMDD.csv`
+- `output/vol2vol/vol2vol_summary_latest.json`
+
+The exporter also writes timestamped archive snapshots under `output/<kind>/archive/YYYYMMDD/*_HHMMSS.*`. These are for audit/debug/replay history and should not replace the top-level current files unless a consumer app explicitly implements archive selection.
+
 #### 1. Run the manual fetch directly on the Host (Recommended if Docker engine mismatch occurs)
 Since public options and futures OI do not require logged-in sessions:
 ```bash
@@ -105,4 +115,3 @@ The Vol2Vol scraper requires active CME cookies stored at `config/cme-cookies.js
 4. [ ] Test notification webhooks.
 5. [ ] Verify proxy throughput.
 6. [ ] Verify Nginx Proxy Manager configuration routing rules point to `cme-dashboard` on port 3000 and `cme-api` on port 3002.
-

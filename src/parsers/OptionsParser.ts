@@ -33,16 +33,16 @@ export interface CmeOptionSide {
 }
 
 export class OptionsParser {
-  private parseDecimal(val: string): number | null {
-    if (!val || val === '-' || val.toUpperCase() === 'UNCH') return null;
-    const cleanVal = val.replace(/,/g, '');
+  private parseDecimal(val: any): number | null {
+    if (val === undefined || val === null || val === '-' || val.toString().toUpperCase() === 'UNCH') return null;
+    const cleanVal = val.toString().replace(/,/g, '');
     const parsed = parseFloat(cleanVal);
     return isNaN(parsed) ? null : parsed;
   }
 
-  private parseIntVal(val: string): number {
-    if (!val || val === '-') return 0;
-    const cleanVal = val.replace(/,/g, '');
+  private parseIntVal(val: any): number {
+    if (val === undefined || val === null || val === '-') return 0;
+    const cleanVal = val.toString().replace(/,/g, '');
     const parsed = parseInt(cleanVal, 10);
     return isNaN(parsed) ? 0 : parsed;
   }

@@ -2,6 +2,15 @@
 
 A robust, production-grade automated pipeline for fetching, parsing, and analyzing CME market data (Options, Futures Open Interest, Intraday OHLCV, and Daily Settlement).
 
+## Current Handoff Status (2026-06-16)
+
+- GoldQuant integration contract is latest/current-file first: top-level output filenames remain stable for consumer apps.
+- CSV exporters now write two copies when data is available:
+  - current file, for example `output/options/GC_options_20260616.csv`
+  - archive snapshot, for example `output/options/archive/20260616/GC_options_20260616_153000.csv`
+- Vol2Vol keeps `output/vol2vol/vol2vol_summary_latest.json` as the consumer pointer and archives daily/raw/structured JSON snapshots.
+- Current known integration blocker: GoldQuant can read GC Vol2Vol and GC intraday `1m`; current GC options/OI exports still need to be generated before full real-data graph/paper validation.
+
 ## 🚀 Key Features
 
 - **Multi-Source Scraping**: High-resilience scraping using `camofox-browser` with stealth capabilities and fallback REST API calls.
