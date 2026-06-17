@@ -16,11 +16,12 @@ System status is reported via **Slack** and **LINE** (if configured in `.env`).
 - **Session Reset**: Restart the container to clear browser cache and cookies.
 
 ### 2. Database Connectivity (`DB_ERROR`)
-**Symptom**: Logs show `Query failed` or `Pool connection error`.
+**Symptom**: Logs show `Query failed`, `Pool connection error`, or tests fail with `ECONNREFUSED 127.0.0.1:5433`.
 **Fixes**:
-- Check if DB container is running: `docker ps`.
-- Verify `DATABASE_URL` matches the DB container name (usually `db:5432`).
-- Check DB logs: `docker-compose logs db`.
+- Check if Docker Desktop is running and the DB container is up (`docker ps`).
+- If TimescaleDB is stopped or exited, start it from the Docker Desktop UI or run `docker-compose up -d db` (or the equivalent timescaledb service name).
+- Verify `DATABASE_URL` matches the DB container name (usually `db:5432` inside container, or `127.0.0.1:5433` from host).
+- Check DB logs: `docker-compose logs timescaledb`.
 
 ### 3. Chromium Crash / Shared Memory
 **Symptom**: `Browser launch failed` or `Target closed`.
