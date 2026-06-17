@@ -175,7 +175,15 @@ export class OptionsScraper extends BaseScraper {
       }
     }
     
-    if (!formattedDate && metaTradeDates && metaTradeDates.length > 0) {
+    // Check if the requested tradeDate exists in the metadata tradeDates.
+    // If it doesn't, fallback to the latest available date in metaTradeDates to avoid 0 OI.
+    if (formattedDate && metaTradeDates && metaTradeDates.length > 0) {
+      const exists = metaTradeDates.some(d => d.formatedDate === formattedDate);
+      if (!exists) {
+        logger.warn(`[OptionsScraper] Requested tradeDate ${formattedDate} not found in settlements metadata. Falling back to latest available: ${metaTradeDates[0].formatedDate}`);
+        formattedDate = metaTradeDates[0].formatedDate;
+      }
+    } else if (!formattedDate && metaTradeDates && metaTradeDates.length > 0) {
       formattedDate = metaTradeDates[0].formatedDate;
     }
     
