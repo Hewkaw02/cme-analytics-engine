@@ -6,6 +6,8 @@ import { SlackNotifier, JobSummary } from './notifications/SlackNotifier.js';
 import { LineNotifier } from './notifications/LineNotifier.js';
 import { logger } from './utils/logger.js';
 import { humanDelay } from './utils/Delay.js';
+import fs from 'fs-extra';
+import path from 'path';
 import { format } from 'date-fns';
 import { Symbol, Timeframe } from './types.js';
 import { analysisConfig, AnalysisConfig } from './config/analysis.js';
@@ -483,26 +485,33 @@ export class Orchestrator {
           const { buildPredictionSnapshot, exportPredictionSnapshot } = await import('./exporters/PredictionExporter.js');
           const summary = summaries[0];
           if (summary) {
+            const latestIntraday = await readLatestIntradayClose(env.OUTPUT_DIR, symbol!);
             const currentPrice =
+              latestIntraday?.close ??
               summary.underlying_price ??
               summary.max_pain_strike ??
               summary.max_call_oi_strike ??
               summary.max_put_oi_strike;
             if (currentPrice != null) {
+              const dateStr = tradeDate.replace(/-/g, '');
+              const sourceFiles = [
+                `oi/${symbol}_oi_summary_${dateStr}.csv`,
+                `oi/${symbol}_options_oi_by_strike_${dateStr}.csv`,
+              ];
+              if (latestIntraday) {
+                sourceFiles.push(`intraday/${latestIntraday.fileName}`);
+              }
               const snapshot = buildPredictionSnapshot({
                 symbol: symbol! as Symbol,
                 asOfUtc: new Date().toISOString(),
                 sourceTradeDate: tradeDate,
-                targetTradeDate: tradeDate,
-                hasFreshIntraday: true,
+                targetTradeDate: latestIntraday?.tradeDate ?? tradeDate,
+                hasFreshIntraday: latestIntraday != null,
                 hasCurrentOfficialOi: true,
                 currentPrice,
                 callWall: summary.max_call_oi_strike,
                 putWall: summary.max_put_oi_strike,
-                sourceFiles: [
-                  `oi/${symbol}_oi_summary_${tradeDate.replace(/-/g, '')}.csv`,
-                  `oi/${symbol}_options_oi_by_strike_${tradeDate.replace(/-/g, '')}.csv`,
-                ],
+                sourceFiles,
               });
               await exportPredictionSnapshot(snapshot, env.OUTPUT_DIR);
             }
@@ -735,4 +744,46 @@ export class Orchestrator {
       logger.warn('Failed to send LINE notification', { error: String(err) });
     }
   }
+}
+
+async function readLatestIntradayClose(
+  outputDir: string,
+  symbol: string,
+): Promise<{ close: number; fileName: string; tradeDate: string } | null> {
+  const intradayDir = path.join(outputDir, 'intraday');
+  if (!(await fs.pathExists(intradayDir))) {
+    return null;
+  }
+
+  const prefix = `${symbol}_1m_`;
+  const files = (await fs.readdir(intradayDir))
+    .filter((file) => file.startsWith(prefix) && file.endsWith('.csv'))
+    .sort()
+    .reverse();
+
+  for (const fileName of files) {
+    const tradeDateMatch = fileName.match(/_(\d{8})\.csv$/);
+    const tradeDate = tradeDateMatch
+      ? `${tradeDateMatch[1].slice(0, 4)}-${tradeDateMatch[1].slice(4, 6)}-${tradeDateMatch[1].slice(6, 8)}`
+      : '';
+    const text = await fs.readFile(path.join(intradayDir, fileName), 'utf8');
+    const rows = text.trim().split(/\r?\n/).filter(Boolean);
+    if (rows.length < 2) {
+      continue;
+    }
+    const headers = rows[0].split(',');
+    const closeIndex = headers.indexOf('close');
+    if (closeIndex < 0) {
+      continue;
+    }
+    for (let i = rows.length - 1; i >= 1; i--) {
+      const columns = rows[i].split(',');
+      const close = Number(columns[closeIndex]);
+      if (Number.isFinite(close)) {
+        return { close, fileName, tradeDate };
+      }
+    }
+  }
+
+  return null;
 }
