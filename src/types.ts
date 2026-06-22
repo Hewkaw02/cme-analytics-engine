@@ -304,6 +304,50 @@ export interface SettlementRecord {
   fetched_at: string;
 }
 
+// --- Prediction Bias Snapshots ---
+
+export type PredictionHorizon = 'current_session' | 'next_session' | 'day_after_next';
+export type PredictionDataMode = 'CURRENT' | 'CURRENT_WITH_STALE_OI' | 'PREDICTION_ONLY';
+export type PredictionDirection = 'BULLISH' | 'BEARISH' | 'NEUTRAL' | 'MIXED';
+export type PredictionPreferredDirection = 'LONG' | 'SHORT' | 'NONE';
+
+export interface PredictionEntryZone {
+  label: string;
+  lower: number;
+  upper: number;
+}
+
+export interface PredictionBias {
+  direction: PredictionDirection;
+  confidence: number;
+  drivers: string[];
+}
+
+export interface PredictionPlan {
+  preferredDirection: PredictionPreferredDirection;
+  entryZones: PredictionEntryZone[];
+  invalidationLevel: number | null;
+  tp1: number | null;
+  tp2: number | null;
+  allowedSlots: string[];
+  blockedSlots: string[];
+}
+
+export interface PredictionSnapshot {
+  schemaVersion: 1;
+  symbol: Symbol;
+  asOfUtc: string;
+  sourceTradeDate: string;
+  targetTradeDate: string;
+  horizon: PredictionHorizon;
+  dataMode: PredictionDataMode;
+  isTradable: boolean;
+  reason: string;
+  bias: PredictionBias;
+  plan: PredictionPlan;
+  sourceFiles: string[];
+}
+
 // --- Error Classification ---
 
 export enum ErrorType {

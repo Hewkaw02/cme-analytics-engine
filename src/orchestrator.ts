@@ -479,6 +479,37 @@ export class Orchestrator {
         } catch (e) {
           logger.warn('Failed to export OI summary to CSV', { error: String(e) });
         }
+        try {
+          const { buildPredictionSnapshot, exportPredictionSnapshot } = await import('./exporters/PredictionExporter.js');
+          const summary = summaries[0];
+          if (summary) {
+            const currentPrice =
+              summary.underlying_price ??
+              summary.max_pain_strike ??
+              summary.max_call_oi_strike ??
+              summary.max_put_oi_strike;
+            if (currentPrice != null) {
+              const snapshot = buildPredictionSnapshot({
+                symbol: symbol! as Symbol,
+                asOfUtc: new Date().toISOString(),
+                sourceTradeDate: tradeDate,
+                targetTradeDate: tradeDate,
+                hasFreshIntraday: true,
+                hasCurrentOfficialOi: true,
+                currentPrice,
+                callWall: summary.max_call_oi_strike,
+                putWall: summary.max_put_oi_strike,
+                sourceFiles: [
+                  `oi/${symbol}_oi_summary_${tradeDate.replace(/-/g, '')}.csv`,
+                  `oi/${symbol}_options_oi_by_strike_${tradeDate.replace(/-/g, '')}.csv`,
+                ],
+              });
+              await exportPredictionSnapshot(snapshot, env.OUTPUT_DIR);
+            }
+          }
+        } catch (e) {
+          logger.warn('Failed to export prediction snapshot', { error: String(e) });
+        }
 
         return {
           recordsInserted: summaries.length,
