@@ -85,4 +85,25 @@ describe('PredictionExporter', () => {
     assert.equal(snapshot.bias.direction, 'BULLISH');
     assert.equal(snapshot.plan.preferredDirection, 'LONG');
   });
+
+  it('coerces DB numeric strings before calculating entry and exits', () => {
+    const snapshot = buildPredictionSnapshot({
+      symbol: 'GC',
+      asOfUtc: '2026-06-22T02:15:00.000Z',
+      sourceTradeDate: '2026-06-18',
+      targetTradeDate: '2026-06-22',
+      hasFreshIntraday: true,
+      hasCurrentOfficialOi: true,
+      currentPrice: '4210.50' as unknown as number,
+      callWall: '4400' as unknown as number,
+      putWall: '4000' as unknown as number,
+      sourceFiles: ['oi/GC_oi_summary_20260618.csv'],
+    });
+
+    assert.equal(typeof snapshot.plan.entryZones[0].lower, 'number');
+    assert.equal(typeof snapshot.plan.entryZones[0].upper, 'number');
+    assert.equal(typeof snapshot.plan.invalidationLevel, 'number');
+    assert.equal(typeof snapshot.plan.tp1, 'number');
+    assert.equal(snapshot.plan.entryZones[0].upper, 4215.5);
+  });
 });

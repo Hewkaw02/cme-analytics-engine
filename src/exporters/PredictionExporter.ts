@@ -23,25 +23,28 @@ export interface PredictionBuildInput {
 }
 
 export function buildPredictionSnapshot(input: PredictionBuildInput): PredictionSnapshot {
+  const currentPrice = toFiniteNumber(input.currentPrice, 'currentPrice');
+  const callWall = toOptionalFiniteNumber(input.callWall, 'callWall');
+  const putWall = toOptionalFiniteNumber(input.putWall, 'putWall');
   const dataMode = input.hasFreshIntraday
     ? (input.hasCurrentOfficialOi ? 'CURRENT' : 'CURRENT_WITH_STALE_OI')
     : 'PREDICTION_ONLY';
   const isTradable = dataMode !== 'PREDICTION_ONLY';
-  const midpoint = input.currentPrice;
+  const midpoint = currentPrice;
   const wallMidpoint =
-    input.callWall != null && input.putWall != null
-      ? (input.callWall + input.putWall) / 2
-      : input.currentPrice;
+    callWall != null && putWall != null
+      ? (callWall + putWall) / 2
+      : currentPrice;
   const direction =
-    input.currentPrice > wallMidpoint
+    currentPrice > wallMidpoint
       ? 'BULLISH'
-      : input.currentPrice < wallMidpoint
+      : currentPrice < wallMidpoint
         ? 'BEARISH'
         : 'NEUTRAL';
   const preferredDirection = direction === 'BULLISH' ? 'LONG' : direction === 'BEARISH' ? 'SHORT' : 'NONE';
   const expectedMove = Math.max(
     5,
-    Math.abs((input.callWall ?? midpoint + 20) - (input.putWall ?? midpoint - 20)) * 0.1,
+    Math.abs((callWall ?? midpoint + 20) - (putWall ?? midpoint - 20)) * 0.1,
   );
 
   return {
@@ -59,7 +62,7 @@ export function buildPredictionSnapshot(input: PredictionBuildInput): Prediction
     bias: {
       direction,
       confidence: dataMode === 'CURRENT' ? 0.7 : dataMode === 'CURRENT_WITH_STALE_OI' ? 0.6 : 0.45,
-      drivers: [`callWall=${input.callWall ?? 'NA'}`, `putWall=${input.putWall ?? 'NA'}`],
+      drivers: [`callWall=${callWall ?? 'NA'}`, `putWall=${putWall ?? 'NA'}`],
     },
     plan: {
       preferredDirection,
@@ -159,4 +162,19 @@ function validatePredictionSnapshot(snapshot: PredictionSnapshot): void {
   if (snapshot.dataMode === 'PREDICTION_ONLY' && snapshot.isTradable) {
     throw new Error('PREDICTION_ONLY snapshots must not be tradable');
   }
+}
+
+function toFiniteNumber(value: number, label: string): number {
+  const normalized = Number(value);
+  if (!Number.isFinite(normalized)) {
+    throw new Error(`Prediction snapshot ${label} must be a finite number`);
+  }
+  return normalized;
+}
+
+function toOptionalFiniteNumber(value: number | null, label: string): number | null {
+  if (value == null) {
+    return null;
+  }
+  return toFiniteNumber(value, label);
 }
