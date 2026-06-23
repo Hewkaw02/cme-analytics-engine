@@ -59,6 +59,18 @@ export class Vol2VolScraper extends BaseScraper {
       await page.goto('https://www.cmegroup.com/', { waitUntil: 'domcontentloaded' });
       await humanDelay(3000, 5000);
 
+      // Check if already logged in first
+      const initiallyLoggedIn = await page.evaluate(() => {
+        const bodyText = document.body?.innerText || '';
+        const loggedInIndicators = ['log out', 'logout', 'my account', 'my profile', 'sign out'];
+        return loggedInIndicators.some(indicator => bodyText.toLowerCase().includes(indicator));
+      }).catch(() => false);
+
+      if (initiallyLoggedIn) {
+        logger.info('[Vol2VolScraper] Already logged in according to page indicators.');
+        return true;
+      }
+
       await page.evaluate(() => {
         const buttons = Array.from(document.querySelectorAll('button, a'));
         const loginBtn = buttons.find((b: any) => b.textContent?.trim().toLowerCase() === 'log in');
@@ -67,6 +79,21 @@ export class Vol2VolScraper extends BaseScraper {
 
       logger.info('[Vol2VolScraper] Navigating to login page via homepage click...');
       await humanDelay(5000, 8000);
+
+      let currentUrl = page.url();
+      if (!currentUrl.includes('login.cmegroup.com') && !currentUrl.includes('/sso/login')) {
+        logger.info('[Vol2VolScraper] Login button click did not navigate, going directly to login page...');
+        await page.goto('https://login.cmegroup.com/sso/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await humanDelay(3000, 5000);
+      }
+
+      // Wait for login inputs to load
+      const inputSelector = '#user, input[name="email"], input[name="username"], input[type="email"], input[id="email"], #signInName';
+      try {
+        await page.waitForSelector(inputSelector, { timeout: 15000 });
+      } catch (err) {
+        logger.warn('[Vol2VolScraper] Login inputs not found within 15s.');
+      }
 
       const filledCredentials = await page.evaluate(({ email, password }: any) => {
         const results: string[] = [];
@@ -112,10 +139,26 @@ export class Vol2VolScraper extends BaseScraper {
       }, { email, password });
 
       logger.info('[Vol2VolScraper] Credentials submitted...', { results: filledCredentials });
-      await humanDelay(15000, 20000);
 
-      const currentUrl = page.url();
-      if (!currentUrl.includes('login.cmegroup.com') && !currentUrl.includes('/sso/login')) {
+      // Poll for login success (up to 30 seconds)
+      let loggedIn = false;
+      const loginCheckStart = Date.now();
+      while (Date.now() - loginCheckStart < 30000) {
+        const url = page.url();
+        const hasLoggedInIndicator = await page.evaluate(() => {
+          const bodyText = document.body?.innerText || '';
+          const loggedInIndicators = ['log out', 'logout', 'my account', 'my profile', 'sign out'];
+          return loggedInIndicators.some(indicator => bodyText.toLowerCase().includes(indicator));
+        }).catch(() => false);
+
+        if (!url.includes('login.cmegroup.com') && !url.includes('/sso/login') && (url.includes('cmegroup.com') || hasLoggedInIndicator)) {
+          loggedIn = true;
+          break;
+        }
+        await new Promise(r => setTimeout(r, 2000));
+      }
+
+      if (loggedIn) {
          logger.info('[Vol2VolScraper] Auto-login successful!');
          const ctx = page.context ? page.context() : null;
          if (ctx && typeof ctx.storageState === 'function') {
@@ -126,7 +169,7 @@ export class Vol2VolScraper extends BaseScraper {
          }
          return true;
       }
-      logger.warn('[Vol2VolScraper] Login timeout or still on login page. URL: ' + currentUrl);
+      logger.warn('[Vol2VolScraper] Login timeout or still on login page. URL: ' + page.url());
       return false;
     } catch (e) {
       logger.warn('[Vol2VolScraper] Auto-login failed', { error: String(e) });
@@ -160,49 +203,84 @@ export class Vol2VolScraper extends BaseScraper {
       // 2. Navigate to Wrapper URL to establish/verify session and extract insid/qsid
       logger.info(`[Vol2VolScraper] Navigating to CME Vol2Vol wrapper URL: ${VOL2VOL_URL}`);
       await page.goto(VOL2VOL_URL, { waitUntil: 'domcontentloaded' });
-      await humanDelay(15000, 20000); // Wait for session setup inside frame
+      
+      // Poll up to 30 seconds for the QuikStrike iframe to load AND for session params to be present
+      let qsFrame = null;
+      let insid = null;
+      let qsid = null;
+      const iframeWaitStart = Date.now();
+      
+      while (Date.now() - iframeWaitStart < 30000) {
+        const frames = rawPage.frames ? rawPage.frames() : [];
+        qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+        if (qsFrame) {
+          const frameUrl = qsFrame.url();
+          if (frameUrl && frameUrl !== 'about:blank') {
+            try {
+              const urlObj = new URL(frameUrl);
+              insid = urlObj.searchParams.get('insid');
+              qsid = urlObj.searchParams.get('qsid');
+              if (insid && qsid) {
+                break;
+              }
+            } catch (err) {
+              // ignore malformed URLs
+            }
+          }
+        }
+        await new Promise(r => setTimeout(r, 1000));
+      }
 
-      // Playwright frame URL extraction
-      let frames = rawPage.frames ? rawPage.frames() : [];
-      let qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
-
-      if (!qsFrame) {
-        logger.warn('[Vol2VolScraper] QuikStrike iframe not found. Session might be expired. Triggering auto-login...');
+      if (!qsFrame || !insid || !qsid) {
+        logger.warn('[Vol2VolScraper] QuikStrike iframe or session not found. Session might be expired. Triggering auto-login...');
         const loggedIn = await this.autoLogin(page);
         if (loggedIn) {
           logger.info('[Vol2VolScraper] Returning to wrapper URL after successful login...');
           await page.goto(VOL2VOL_URL, { waitUntil: 'domcontentloaded' });
-          await humanDelay(15000, 20000);
-          frames = rawPage.frames ? rawPage.frames() : [];
-          qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+          
+          // Poll again after login
+          const postLoginWaitStart = Date.now();
+          while (Date.now() - postLoginWaitStart < 30000) {
+            const frames = rawPage.frames ? rawPage.frames() : [];
+            qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+            if (qsFrame) {
+              const frameUrl = qsFrame.url();
+              if (frameUrl && frameUrl !== 'about:blank') {
+                try {
+                  const urlObj = new URL(frameUrl);
+                  insid = urlObj.searchParams.get('insid');
+                  qsid = urlObj.searchParams.get('qsid');
+                  if (insid && qsid) {
+                    break;
+                  }
+                } catch (err) {}
+              }
+            }
+            await new Promise(r => setTimeout(r, 1000));
+          }
         }
       }
 
       let directUrl = `https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedV2VExpectedRange&pid=${prod.pid}&pf=${prod.pf}`;
       const gotoOptions: any = { waitUntil: 'domcontentloaded' };
 
-      if (!qsFrame) {
+      if (!qsFrame || !insid || !qsid) {
         logger.warn('[Vol2VolScraper] QuikStrike iframe still not found. Proceeding with direct navigation fallback using Referer.');
         gotoOptions.referer = VOL2VOL_URL;
       } else {
-        const activeFrameUrl = qsFrame.url();
-        const urlObj = new URL(activeFrameUrl);
-        const insid = urlObj.searchParams.get('insid');
-        const qsid = urlObj.searchParams.get('qsid');
-
-        if (insid && qsid) {
-          logger.info(`[Vol2VolScraper] Session active: insid=${insid}, qsid=${qsid}`);
-          directUrl += `&insid=${insid}&qsid=${qsid}`;
-        } else {
-          logger.warn('[Vol2VolScraper] Could not extract active session identifiers (insid/qsid) from iframe URL. Using fallback Referer.');
-          gotoOptions.referer = VOL2VOL_URL;
-        }
+        logger.info(`[Vol2VolScraper] Session active: insid=${insid}, qsid=${qsid}`);
+        directUrl += `&insid=${insid}&qsid=${qsid}`;
       }
 
-      // 3. Navigate directly to direct chart URL
-      logger.info(`[Vol2VolScraper] Navigating directly to direct view: ${directUrl}`);
-      
+      // 3. Navigate directly to direct view
       try {
+        // Stop current wrapper page loading and navigate to about:blank to avoid NS_BINDING_ABORTED
+        try {
+          await page.evaluate(() => window.stop()).catch(() => {});
+          await page.goto('about:blank', { waitUntil: 'domcontentloaded', timeout: 5000 } as any).catch(() => {});
+        } catch {}
+
+        logger.info(`[Vol2VolScraper] Navigating directly to direct view: ${directUrl}`);
         await page.goto(directUrl, gotoOptions);
       } catch (err: any) {
         logger.warn(`[Vol2VolScraper] Direct navigation failed: ${err.message}. Clearing cookies and retrying login...`);
@@ -227,32 +305,47 @@ export class Vol2VolScraper extends BaseScraper {
         
         logger.info('[Vol2VolScraper] Returning to wrapper URL after successful re-login...');
         await page.goto(VOL2VOL_URL, { waitUntil: 'domcontentloaded' });
-        await humanDelay(15000, 20000);
         
-        frames = rawPage.frames ? rawPage.frames() : [];
-        qsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+        // Poll for iframe again after re-login
+        let newQsFrame = null;
+        let newInsid = null;
+        let newQsid = null;
+        const reLoginIframeWaitStart = Date.now();
+        while (Date.now() - reLoginIframeWaitStart < 30000) {
+          const frames = rawPage.frames ? rawPage.frames() : [];
+          newQsFrame = frames.find((f: any) => f.url().includes('QuikStrikeView.aspx'));
+          if (newQsFrame) {
+            const frameUrl = newQsFrame.url();
+            if (frameUrl && frameUrl !== 'about:blank') {
+              try {
+                const urlObj = new URL(frameUrl);
+                newInsid = urlObj.searchParams.get('insid');
+                newQsid = urlObj.searchParams.get('qsid');
+                if (newInsid && newQsid) {
+                  break;
+                }
+              } catch (err) {}
+            }
+          }
+          await new Promise(r => setTimeout(r, 1000));
+        }
         
         directUrl = `https://cmegroup-tools.quikstrike.net/User/QuikStrikeView.aspx?viewitemid=IntegratedV2VExpectedRange&pid=${prod.pid}&pf=${prod.pf}`;
         const newGotoOptions: any = { waitUntil: 'domcontentloaded' };
         
-        if (!qsFrame) {
+        if (!newQsFrame || !newInsid || !newQsid) {
           logger.warn('[Vol2VolScraper] QuikStrike iframe still not found after re-login. Proceeding with direct navigation fallback using Referer.');
           newGotoOptions.referer = VOL2VOL_URL;
         } else {
-          const activeFrameUrl = qsFrame.url();
-          const urlObj = new URL(activeFrameUrl);
-          const insid = urlObj.searchParams.get('insid');
-          const qsid = urlObj.searchParams.get('qsid');
-          
-          if (insid && qsid) {
-            logger.info(`[Vol2VolScraper] Session active after re-login: insid=${insid}, qsid=${qsid}`);
-            directUrl += `&insid=${insid}&qsid=${qsid}`;
-          } else {
-            logger.warn('[Vol2VolScraper] Could not extract active session identifiers (insid/qsid) after re-login. Using fallback Referer.');
-            newGotoOptions.referer = VOL2VOL_URL;
-          }
+          logger.info(`[Vol2VolScraper] Session active after re-login: insid=${newInsid}, qsid=${newQsid}`);
+          directUrl += `&insid=${newInsid}&qsid=${newQsid}`;
         }
         
+        try {
+          await page.evaluate(() => window.stop()).catch(() => {});
+          await page.goto('about:blank', { waitUntil: 'domcontentloaded', timeout: 5000 } as any).catch(() => {});
+        } catch {}
+
         logger.info(`[Vol2VolScraper] Retrying direct navigation: ${directUrl}`);
         await page.goto(directUrl, newGotoOptions);
       }

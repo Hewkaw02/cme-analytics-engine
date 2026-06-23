@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:22-slim
 
 # Install Chromium dependencies (for camofox headless browser)
 # RUN sed -i 's|^URIs: http://deb.debian.org/debian$|URIs: http://mirror.kku.ac.th/debian|g' /etc/apt/sources.list.d/debian.sources || true
