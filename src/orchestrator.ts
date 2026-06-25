@@ -482,8 +482,12 @@ export class Orchestrator {
           logger.warn('Failed to export OI summary to CSV', { error: String(e) });
         }
         try {
-          const { buildPredictionSnapshot, exportPredictionSnapshot } = await import('./exporters/PredictionExporter.js');
-          const summary = summaries[0];
+          const {
+            buildPredictionSnapshot,
+            exportPredictionSnapshot,
+            selectPredictionSummary,
+          } = await import('./exporters/PredictionExporter.js');
+          const summary = selectPredictionSummary(summaries);
           if (summary) {
             const latestIntraday = await readLatestIntradayClose(env.OUTPUT_DIR, symbol!);
             const currentPrice =

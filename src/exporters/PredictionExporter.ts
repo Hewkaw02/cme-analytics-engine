@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import { parseISO } from 'date-fns';
 import { logger } from '../utils/logger.js';
-import type { PredictionSnapshot } from '../types.js';
+import type { OISummaryRecord, PredictionSnapshot } from '../types.js';
 
 export interface PredictionExportResult {
   latestPath: string;
@@ -35,12 +35,7 @@ export function buildPredictionSnapshot(input: PredictionBuildInput): Prediction
     callWall != null && putWall != null
       ? (callWall + putWall) / 2
       : currentPrice;
-  const direction =
-    currentPrice > wallMidpoint
-      ? 'BULLISH'
-      : currentPrice < wallMidpoint
-        ? 'BEARISH'
-        : 'NEUTRAL';
+  const direction = classifyWallAwareBias(currentPrice, callWall, putWall, wallMidpoint);
   const preferredDirection = direction === 'BULLISH' ? 'LONG' : direction === 'BEARISH' ? 'SHORT' : 'NONE';
   const expectedMove = Math.max(
     5,
@@ -164,6 +159,33 @@ function validatePredictionSnapshot(snapshot: PredictionSnapshot): void {
   }
 }
 
+export function selectPredictionSummary(summaries: OISummaryRecord[]): OISummaryRecord | null {
+  const candidates = summaries
+    .filter((summary) => {
+      const dte = Number(summary.days_to_expiry);
+      const totalOi = Number(summary.total_call_oi ?? 0) + Number(summary.total_put_oi ?? 0);
+      return (
+        Number.isFinite(dte) &&
+        dte >= 0 &&
+        totalOi > 0 &&
+        summary.max_call_oi_strike != null &&
+        summary.max_put_oi_strike != null
+      );
+    })
+    .sort((a, b) => {
+      const dteA = Number(a.days_to_expiry);
+      const dteB = Number(b.days_to_expiry);
+      if (dteA !== dteB) {
+        return dteA - dteB;
+      }
+      const oiA = Number(a.total_call_oi ?? 0) + Number(a.total_put_oi ?? 0);
+      const oiB = Number(b.total_call_oi ?? 0) + Number(b.total_put_oi ?? 0);
+      return oiB - oiA;
+    });
+
+  return candidates[0] ?? summaries[0] ?? null;
+}
+
 function toFiniteNumber(value: number, label: string): number {
   const normalized = Number(value);
   if (!Number.isFinite(normalized)) {
@@ -177,4 +199,38 @@ function toOptionalFiniteNumber(value: number | null, label: string): number | n
     return null;
   }
   return toFiniteNumber(value, label);
+}
+
+function classifyWallAwareBias(
+  currentPrice: number,
+  callWall: number | null,
+  putWall: number | null,
+  fallbackMidpoint: number,
+): PredictionSnapshot['bias']['direction'] {
+  if (callWall != null && putWall != null && callWall > putWall) {
+    const range = callWall - putWall;
+    const supportResistanceBand = range * 0.35;
+
+    if (currentPrice <= putWall) {
+      return 'BULLISH';
+    }
+    if (currentPrice >= callWall) {
+      return 'BEARISH';
+    }
+
+    const distanceToPut = currentPrice - putWall;
+    const distanceToCall = callWall - currentPrice;
+    if (distanceToPut <= supportResistanceBand && distanceToPut < distanceToCall) {
+      return 'BULLISH';
+    }
+    if (distanceToCall <= supportResistanceBand && distanceToCall < distanceToPut) {
+      return 'BEARISH';
+    }
+  }
+
+  return currentPrice > fallbackMidpoint
+    ? 'BULLISH'
+    : currentPrice < fallbackMidpoint
+      ? 'BEARISH'
+      : 'NEUTRAL';
 }

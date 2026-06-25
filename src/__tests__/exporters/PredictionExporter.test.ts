@@ -5,7 +5,9 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import {
   buildPredictionSnapshot,
   exportPredictionSnapshot,
+  selectPredictionSummary,
 } from '../../exporters/PredictionExporter.js';
+import type { OISummaryRecord } from '../../types.js';
 import type { PredictionSnapshot } from '../../types.js';
 
 const outputDir = path.join(process.cwd(), 'output_test_prediction');
@@ -106,4 +108,75 @@ describe('PredictionExporter', () => {
     assert.equal(typeof snapshot.plan.tp1, 'number');
     assert.equal(snapshot.plan.entryZones[0].upper, 4215.5);
   });
+
+  it('uses bullish support bias when current price is closer to put wall inside the range', () => {
+    const snapshot = buildPredictionSnapshot({
+      symbol: 'GC',
+      asOfUtc: '2026-06-25T02:15:00.000Z',
+      sourceTradeDate: '2026-06-24',
+      targetTradeDate: '2026-06-24',
+      hasFreshIntraday: true,
+      hasCurrentOfficialOi: true,
+      currentPrice: 3995,
+      callWall: 4400,
+      putWall: 3800,
+      sourceFiles: ['oi/GC_oi_summary_20260624.csv'],
+    });
+
+    assert.equal(snapshot.bias.direction, 'BULLISH');
+    assert.equal(snapshot.plan.preferredDirection, 'LONG');
+  });
+
+  it('selects the nearest liquid OI summary instead of the first row', () => {
+    const farSummary = makeSummary({
+      expiry_code: 'F7_192',
+      days_to_expiry: 216,
+      total_call_oi: 11909,
+      total_put_oi: 2801,
+      max_call_oi_strike: 6500,
+      max_put_oi_strike: 4100,
+    });
+    const nearSummary = makeSummary({
+      expiry_code: 'M6_192',
+      days_to_expiry: 1,
+      total_call_oi: 80000,
+      total_put_oi: 75000,
+      max_call_oi_strike: 4400,
+      max_put_oi_strike: 3800,
+    });
+
+    const selected = selectPredictionSummary([farSummary, nearSummary]);
+
+    assert.equal(selected?.expiry_code, 'M6_192');
+  });
 });
+
+function makeSummary(overrides: Partial<OISummaryRecord>): OISummaryRecord {
+  return {
+    trade_date: '2026-06-24',
+    symbol: 'GC',
+    expiry_code: 'M6_192',
+    expiry_date: '2026-06-25T00:00:00.000Z',
+    days_to_expiry: 1,
+    underlying_price: null,
+    total_call_oi: 0,
+    total_put_oi: 0,
+    total_call_volume: 0,
+    total_put_volume: 0,
+    put_call_oi_ratio: null,
+    put_call_vol_ratio: null,
+    max_call_oi_strike: null,
+    max_put_oi_strike: null,
+    max_pain_strike: null,
+    max_call_oi_value: 0,
+    max_put_oi_value: 0,
+    net_gamma_exposure: 0,
+    gex_flip_level: null,
+    atm_iv_call: null,
+    atm_iv_put: null,
+    atm_iv_skew: null,
+    iv_rank: null,
+    iv_percentile: null,
+    ...overrides,
+  };
+}
